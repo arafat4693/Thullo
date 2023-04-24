@@ -1,18 +1,27 @@
 import { Navbar, Dropdown, Avatar, TextInput, Button } from "flowbite-react";
 import { AiFillCaretDown } from "react-icons/ai";
+import { CgMenuGridR } from "react-icons/cg";
 
 export default function AppHeader() {
   return (
     <header className="AppHeader w-full border-0 border-b border-solid border-gray-200 bg-white">
-      <Navbar fluid={true} className="mx-auto max-w-[92rem]">
-        <Navbar.Brand href="https://flowbite.com/">
-          <img
-            src="/images/Logo.svg"
-            className="mr-3 h-6 sm:h-9"
-            alt="Tweeter Logo"
-          />
-        </Navbar.Brand>
-        <div>
+      <nav className="mx-auto flex max-w-[92rem] items-center justify-between p-3">
+        <img
+          src="/images/Logo.svg"
+          className="mr-24 h-6 sm:h-9"
+          alt="Tweeter Logo"
+        />
+        <div className="flex flex-grow items-center justify-between">
+          <div className="flex items-center gap-5">
+            <h2 className="text-lg font-semibold text-gray-700">
+              Devchallenges Board
+            </h2>
+            <span className="h-10 w-0.5 bg-gray-200"></span>
+            <button className="flex items-center gap-2 rounded-lg bg-[#F2F2F2] px-4 py-2 text-sm font-semibold text-gray-700">
+              <CgMenuGridR />
+              All board
+            </button>
+          </div>
           <form className="flex w-[21.15rem] rounded-lg bg-white p-1 shadow-md">
             <TextInput
               id="keyword"
@@ -24,7 +33,7 @@ export default function AppHeader() {
             <Button>Search</Button>
           </form>
         </div>
-        <div className="flex items-center gap-3 md:order-2">
+        <div className="ml-11 flex items-center gap-3 md:order-2">
           <Avatar
             alt="User settings"
             img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
@@ -51,9 +60,8 @@ export default function AppHeader() {
             <Dropdown.Divider />
             <Dropdown.Item>Sign out</Dropdown.Item>
           </Dropdown>
-          <Navbar.Toggle />
         </div>
-      </Navbar>
+      </nav>
     </header>
   );
 }
