@@ -5,7 +5,7 @@ import { CgMenuGridR } from "react-icons/cg";
 export default function AppHeader() {
   return (
     <header className="AppHeader w-full border-0 border-b border-solid border-gray-200 bg-white">
-      <nav className="mx-auto flex max-w-[92rem] items-center justify-between p-3">
+      <nav className="mx-auto flex w-[92rem] max-w-full items-center justify-between p-3">
         <img
           src="/images/Logo.svg"
           className="mr-24 h-6 sm:h-9"

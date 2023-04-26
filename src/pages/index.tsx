@@ -1,18 +1,42 @@
+import { Button } from "flowbite-react";
 import { type NextPage } from "next";
-import Head from "next/head";
-import Link from "next/link";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { api } from "~/utils/api";
-import { Alert } from "flowbite-react";
-import Layout from "~/components/layout/Layout";
+import { useState } from "react";
+import { AiOutlinePlus } from "react-icons/ai";
+import BoardCard from "~/components/home/BoardCard";
+import CreateBoardModal from "~/components/home/CreateBoardModal";
+import Modal from "~/components/layout/Modal";
 
 const Home: NextPage = () => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   return (
-    <section className="mx-auto w-[80rem] max-w-full px-4 py-6">
-      section
-    </section>
+    <>
+      <section className="mx-auto w-[80rem] max-w-full p-3">
+        <div className="flex items-center justify-between pt-8">
+          <h2 className="text-lg font-semibold text-gray-700">All Boards</h2>
+          <Button onClick={() => setShowModal(true)}>
+            <AiOutlinePlus className="mr-1.5 text-base" />
+            Add
+          </Button>
+        </div>
+
+        <main className="mt-8 grid grid-cols-4 gap-7">
+          <BoardCard />
+          <BoardCard />
+          <BoardCard />
+          <BoardCard />
+        </main>
+      </section>
+
+      {showModal && (
+        <Modal
+          showModal={showModal}
+          setShowModal={setShowModal}
+          modalBody={<CreateBoardModal setShowModal={setShowModal} />}
+        />
+      )}
+    </>
   );
 };
 
