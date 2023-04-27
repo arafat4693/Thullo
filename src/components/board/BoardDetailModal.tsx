@@ -12,7 +12,7 @@ interface Props {
 export default function BoardDetailModal({ setShowModal }: Props) {
   return (
     <div
-      className="w-[43rem] rounded-lg bg-white p-5 shadow-sm"
+      className="styledScrollbar max-h-[96%] w-[43rem] rounded-lg bg-white p-5 shadow-sm"
       onClick={(e) => e.stopPropagation()}
     >
       <figure className="relative h-36 w-full rounded-xl">

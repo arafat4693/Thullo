@@ -15,10 +15,10 @@ export default function Attachment() {
           Lorem ipsum dolor sit
         </h3>
         <div className="mt-1.5 flex flex-wrap gap-2">
-          <Button color="success" pill={true} size="xs">
+          <Button color="success" size="xs">
             Download
           </Button>
-          <Button color="failure" pill={true} size="xs">
+          <Button color="failure" size="xs">
             Delete
           </Button>
         </div>

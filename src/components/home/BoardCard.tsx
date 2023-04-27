@@ -16,9 +16,18 @@ export default function BoardCard() {
         Noteworthy technology
       </h5>
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <Avatar img="https://flowbite.com/docs/images/people/profile-picture-5.jpg" />
-        <Avatar img="https://flowbite.com/docs/images/people/profile-picture-5.jpg" />
-        <Avatar img="https://flowbite.com/docs/images/people/profile-picture-5.jpg" />
+        <Avatar
+          size="sm"
+          img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+        />
+        <Avatar
+          size="sm"
+          img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+        />
+        <Avatar
+          size="sm"
+          img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+        />
         <span className="text-sm font-medium text-gray-400">+ 5 others</span>
       </div>
     </div>

@@ -2,6 +2,8 @@ import { Button } from "flowbite-react";
 import { AiFillEdit, AiOutlinePlus } from "react-icons/ai";
 import { HiDocumentText } from "react-icons/hi";
 import Attachment from "./Attachment";
+import CreateComment from "./CreateComment";
+import Comment from "./Comment";
 
 export default function DetailsInModal() {
   return (
@@ -19,7 +21,7 @@ export default function DetailsInModal() {
           <HiDocumentText />
           Description
         </p>
-        <Button color="dark" pill={true} size="xs">
+        <Button color="dark" size="xs">
           <AiFillEdit className="mr-1 h-3 w-3" />
           Edit
         </Button>
@@ -30,7 +32,7 @@ export default function DetailsInModal() {
           <HiDocumentText />
           Attachments
         </p>
-        <Button color="dark" pill={true} size="xs">
+        <Button color="dark" size="xs">
           <AiOutlinePlus className="mr-1 h-3 w-3" />
           Add
         </Button>
@@ -38,6 +40,11 @@ export default function DetailsInModal() {
 
       <Attachment />
       <Attachment />
+
+      <CreateComment />
+
+      <Comment />
+      <Comment />
     </div>
   );
 }

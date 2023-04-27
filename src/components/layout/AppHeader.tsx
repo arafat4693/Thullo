@@ -17,7 +17,7 @@ export default function AppHeader() {
               Devchallenges Board
             </h2>
             <span className="h-10 w-0.5 bg-gray-200"></span>
-            <button className="flex items-center gap-2 rounded-lg bg-[#F2F2F2] px-4 py-2 text-sm font-semibold text-gray-700">
+            <button className="flex items-center gap-2 rounded-lg bg-[#F2F2F2] px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-[#e7e7e7]">
               <CgMenuGridR />
               All board
             </button>
