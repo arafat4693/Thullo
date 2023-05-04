@@ -31,7 +31,7 @@ export default function BoardDetailModal({ setShowModal }: Props) {
         />
       </figure>
 
-      <main className="mt-6 grid grid-cols-3 gap-4">
+      <main className="mt-6 grid grid-cols-3 gap-6">
         <DetailsInModal />
         <ActionInModal />
       </main>

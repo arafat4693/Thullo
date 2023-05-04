@@ -2,7 +2,7 @@ import { Button } from "flowbite-react";
 import { type NextPage } from "next";
 import { useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
-import BoardDetailModal from "~/components/board/BoardDetailModal";
+import BoardDetailModal from "~/components/boardModal/BoardDetailModal";
 import BoardCard from "~/components/home/BoardCard";
 import CreateBoardModal from "~/components/home/CreateBoardModal";
 import Modal from "~/components/layout/Modal";
@@ -31,16 +31,16 @@ const Home: NextPage = () => {
       </section>
 
       {showModal && (
-        // <Modal
-        //   showModal={showModal}
-        //   setShowModal={setShowModal}
-        //   modalBody={<CreateBoardModal setShowModal={setShowModal} />}
-        // />
         <Modal
           showModal={showModal}
           setShowModal={setShowModal}
-          modalBody={<BoardDetailModal setShowModal={setShowModal} />}
+          modalBody={<CreateBoardModal setShowModal={setShowModal} />}
         />
+        // <Modal
+        //   showModal={showModal}
+        //   setShowModal={setShowModal}
+        //   modalBody={<BoardDetailModal setShowModal={setShowModal} />}
+        // />
       )}
     </>
   );

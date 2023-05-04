@@ -1,6 +1,7 @@
-import { Button } from "flowbite-react";
 import { CgProfile } from "react-icons/cg";
+import Covers from "./Covers";
 import Labels from "./Labels";
+import Members from "./Members";
 
 export default function ActionInModal() {
   return (
@@ -11,9 +12,9 @@ export default function ActionInModal() {
       </p>
 
       <div className="mt-3 flex flex-col gap-2">
-        <Button color="dark">Members</Button>
         <Labels />
-        <Button color="dark">Covers</Button>
+        <Covers />
+        <Members />
       </div>
     </aside>
   );

@@ -41,7 +41,7 @@ export default function Labels() {
         Available
       </p>
 
-      <div className="mt-2">
+      <div className="mt-2 flex flex-wrap gap-2">
         <span className="rounded-lg bg-blue-100 px-2 py-1 text-xs font-medium text-blue-500">
           Technical
         </span>

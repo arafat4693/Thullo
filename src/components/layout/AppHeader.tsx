@@ -1,6 +1,7 @@
 import { Navbar, Dropdown, Avatar, TextInput, Button } from "flowbite-react";
 import { AiFillCaretDown } from "react-icons/ai";
 import { CgMenuGridR } from "react-icons/cg";
+import MyButton from "./MyButton";
 
 export default function AppHeader() {
   return (
@@ -17,10 +18,7 @@ export default function AppHeader() {
               Devchallenges Board
             </h2>
             <span className="h-10 w-0.5 bg-gray-200"></span>
-            <button className="flex items-center gap-2 rounded-lg bg-[#F2F2F2] px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-[#e7e7e7]">
-              <CgMenuGridR />
-              All board
-            </button>
+            <MyButton btnName="All board" BtnIcon={CgMenuGridR} />
           </div>
           <form className="flex w-[21.15rem] rounded-lg bg-white p-1 shadow-md">
             <TextInput

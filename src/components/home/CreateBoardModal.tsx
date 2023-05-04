@@ -54,7 +54,12 @@ export default function CreateBoardModal({ setShowModal }: Props) {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-        <button className="text-sm font-semibold text-gray-500">Cancel</button>
+        <button
+          className="text-sm font-semibold text-gray-500"
+          onClick={(e) => setShowModal(false)}
+        >
+          Cancel
+        </button>
         <Button size="sm">
           <AiOutlinePlus className="mr-2 h-4 w-4" />
           Create
