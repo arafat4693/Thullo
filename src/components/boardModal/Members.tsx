@@ -29,7 +29,17 @@ export default function Members() {
         </figcaption>
       </figure>
 
-      <AssignMember />
+      <AssignMember
+        title="Members"
+        subtitle="Assign members to this card"
+        btnName="Add"
+        labelElm={
+          <button className="mt-6 flex w-full items-center justify-between rounded-lg bg-blue-100 px-3 py-2 text-sm font-semibold text-blue-500">
+            Assign a member
+            <AiOutlinePlus className="h-4 w-4" />
+          </button>
+        }
+      />
     </div>
   );
 }

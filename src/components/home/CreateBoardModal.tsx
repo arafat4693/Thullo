@@ -22,7 +22,7 @@ export default function CreateBoardModal({ setShowModal }: Props) {
         <Button
           size="xs"
           className="absolute -right-2 -top-3 z-10"
-          onClick={(e) => setShowModal(false)}
+          onClick={() => setShowModal(false)}
         >
           <AiOutlineClose className="h-5 w-5" />
         </Button>

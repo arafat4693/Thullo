@@ -1,28 +1,33 @@
 import { Avatar, Button, Dropdown, TextInput } from "flowbite-react";
 import { AiOutlinePlus } from "react-icons/ai";
 
-export default function AssignMember() {
+interface Props {
+  labelElm: JSX.Element;
+  btnName: string;
+  title: string;
+  subtitle: string;
+}
+
+export default function AssignMember({
+  labelElm,
+  btnName,
+  title,
+  subtitle,
+}: Props) {
   return (
     <Dropdown
       arrowIcon={false}
       inline={true}
       placement="bottom"
-      label={
-        <button className="mt-6 flex w-full items-center justify-between rounded-lg bg-blue-100 px-3 py-2 text-sm font-semibold text-blue-500">
-          Assign a member
-          <AiOutlinePlus className="h-4 w-4" />
-        </button>
-      }
+      label={labelElm}
       className="min-w-[16rem] rounded-xl border border-solid border-gray-300 px-3"
     >
-      <h4 className="text-sm font-semibold text-gray-700">Members</h4>
-      <p className="mt-0.5 text-sm text-gray-400">
-        Assign members to this card
-      </p>
+      <h4 className="text-sm font-semibold text-gray-700">{title}</h4>
+      <p className="mt-0.5 text-sm text-gray-400">{subtitle}</p>
 
       <TextInput
         type="text"
-        placeholder="label..."
+        placeholder="User..."
         required={true}
         className="my-3 rounded-lg shadow-md"
       />
@@ -39,7 +44,7 @@ export default function AssignMember() {
         </figure>
       </div>
 
-      <Button className="mx-auto mt-5">Invite</Button>
+      <Button className="mx-auto mt-5">{btnName}</Button>
     </Dropdown>
   );
 }

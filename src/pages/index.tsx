@@ -1,33 +1,61 @@
-import { Button } from "flowbite-react";
-import { type NextPage } from "next";
+import { Alert, Button } from "flowbite-react";
+import type {
+  GetServerSidePropsContext,
+  InferGetServerSidePropsType,
+} from "next";
+import { getSession, useSession } from "next-auth/react";
 import { useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import BoardDetailModal from "~/components/boardModal/BoardDetailModal";
 import BoardCard from "~/components/home/BoardCard";
 import CreateBoardModal from "~/components/home/CreateBoardModal";
+import LoginModal from "~/components/home/LoginModal";
+import AppHeader from "~/components/layout/AppHeader";
 import Modal from "~/components/layout/Modal";
 
-const Home: NextPage = () => {
+const Home = ({
+  userSession,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [loginModal, setLoginModal] = useState<boolean>(false);
+
+  console.log(userSession);
 
   return (
     <>
-      <section className="mx-auto w-[80rem] max-w-full p-3">
-        <div className="flex items-center justify-between pt-8">
-          <h2 className="text-lg font-semibold text-gray-700">All Boards</h2>
-          <Button onClick={() => setShowModal(true)}>
-            <AiOutlinePlus className="mr-1.5 text-base" />
-            Add
-          </Button>
-        </div>
+      <AppHeader
+        boardPage={false}
+        userSession={userSession}
+        setLoginModal={setLoginModal}
+      />
 
-        <main className="mt-8 grid grid-cols-4 gap-7">
-          <BoardCard />
-          <BoardCard />
-          <BoardCard />
-          <BoardCard />
-        </main>
+      <section className="mx-auto w-[80rem] max-w-full p-3">
+        {userSession && (
+          <div className="flex items-center justify-between pt-8">
+            <h2 className="text-lg font-semibold text-gray-700">All Boards</h2>
+            <Button onClick={() => setShowModal(true)}>
+              <AiOutlinePlus className="mr-1.5 text-base" />
+              Add
+            </Button>
+          </div>
+        )}
+
+        {userSession ? (
+          <main className="mt-8 grid grid-cols-4 gap-7">
+            <BoardCard />
+            <BoardCard />
+            <BoardCard />
+            <BoardCard />
+          </main>
+        ) : (
+          <Alert color="info">
+            <span>
+              <span className="font-medium">Authentication alert!</span> Please
+              log in first.
+            </span>
+          </Alert>
+        )}
       </section>
 
       {showModal && (
@@ -42,32 +70,35 @@ const Home: NextPage = () => {
         //   modalBody={<BoardDetailModal setShowModal={setShowModal} />}
         // />
       )}
+
+      {loginModal && (
+        <Modal
+          showModal={showModal}
+          setShowModal={setShowModal}
+          modalBody={<LoginModal setShowModal={setShowModal} />}
+        />
+      )}
     </>
   );
 };
 
 export default Home;
 
-// const AuthShowcase: React.FC = () => {
-//   const { data: sessionData } = useSession();
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const userSession = await getSession(context);
 
-//   const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-//     undefined, // no input
-//     { enabled: sessionData?.user !== undefined }
-//   );
+  // const ssg = createProxySSGHelpers({
+  //   router: appRouter,
+  //   ctx: createInnerTRPCContext({ session: userSession }),
+  //   transformer: superjson,
+  // });
 
-//   return (
-//     <div className="flex flex-col items-center justify-center gap-4">
-//       <p className="text-center text-2xl text-white">
-//         {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-//         {secretMessage && <span> - {secretMessage}</span>}
-//       </p>
-//       <button
-//         className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-//         onClick={sessionData ? () => void signOut() : () => void signIn()}
-//       >
-//         {sessionData ? "Sign out" : "Sign in"}
-//       </button>
-//     </div>
-//   );
-// };
+  // await ssg.tweet.getTweets.prefetch();
+
+  return {
+    props: {
+      // trpcState: ssg.dehydrate(),
+      userSession,
+    },
+  };
+}

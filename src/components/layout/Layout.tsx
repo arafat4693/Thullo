@@ -1,12 +1,16 @@
 import Head from "next/head";
 import AppHeader from "./AppHeader";
-import type { ReactElement } from "react";
+import { ReactElement, useState } from "react";
+import Modal from "./Modal";
+import LoginModal from "../home/LoginModal";
 
 interface LayoutProps {
   children: ReactElement;
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const [showModal, setShowModal] = useState<boolean>(false);
+
   return (
     <section className="flex min-h-screen w-screen flex-col bg-white">
       <Head>
@@ -15,7 +19,6 @@ export default function Layout({ children }: LayoutProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <AppHeader />
       {children}
     </section>
   );

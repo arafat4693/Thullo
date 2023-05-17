@@ -1,6 +1,7 @@
 import { Avatar, Button } from "flowbite-react";
 import { AiFillLock, AiOutlinePlus } from "react-icons/ai";
 import { BsThreeDots } from "react-icons/bs";
+import AssignMember from "~/components/boardModal/AssignMember";
 import BoardList from "~/components/boardPage/BoardList";
 import Visibility from "~/components/boardPage/Visibility";
 import MyButton from "~/components/layout/MyButton";
@@ -22,15 +23,28 @@ export default function board() {
               img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
             />
 
-            <Button size="sm">
-              <AiOutlinePlus />
-            </Button>
+            <AssignMember
+              title="Invite to Board"
+              subtitle="Search users you want to invite to"
+              btnName="Invite"
+              labelElm={
+                <p className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-blue-600 text-xl text-white hover:bg-blue-700">
+                  <AiOutlinePlus />
+                </p>
+              }
+            />
           </div>
 
           <MyButton BtnIcon={BsThreeDots} btnName="Show Menu" />
         </nav>
 
-        <article className="mt-5 w-full rounded-xl bg-sky-100/60 p-4">
+        {/*have to fix the scrollbar*/}
+        <article className="styledScrollbarX mt-5 flex gap-x-8 rounded-xl bg-sky-100/60 p-4">
+          <BoardList />
+          <BoardList />
+          <BoardList />
+          <BoardList />
+          <BoardList />
           <BoardList />
         </article>
       </main>
