@@ -48,13 +48,19 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(auto()) @map("_id") @db.ObjectId
+    id            String      @id @default(auto()) @map("_id") @db.ObjectId
     name          String?
-    email         String?   @unique
+    email         String?     @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
+    boardIDs      String[]    @db.ObjectId
+    boardsMember  Board[]     @relation("member", fields: [boardIDs], references: [id])
+    userBoards    Board[]     @relation("owner")
+    BoardCard     BoardCard[] @relation("assigned", fields: [boardCardId], references: [id])
+    boardCardId   String[]    @db.ObjectId
+    Comment       Comment[]
 }
 
 model VerificationToken {
@@ -64,4 +70,61 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Board {
+    id          String     @id @default(auto()) @map("_id") @db.ObjectId
+    cover       String?
+    coverID     String?
+    description String?
+    title       String
+    visibility  Visibility @default(PUBLIC)
+
+    user      User     @relation("owner", fields: [userId], references: [id])
+    userId    String   @db.ObjectId
+    memberIDs String[] @db.ObjectId
+    memebers  User[]   @relation("member", fields: [memberIDs], references: [id])
+}
+
+model BoardList {
+    id    String      @id @default(auto()) @map("_id") @db.ObjectId
+    name  String
+    cards BoardCard[]
+}
+
+model BoardCard {
+    id               String     @id @default(auto()) @map("_id") @db.ObjectId
+    BoardList        BoardList? @relation(fields: [boardListId], references: [id])
+    boardListId      String?    @db.ObjectId
+    title            String
+    assignedIDs      String[]   @db.ObjectId
+    assignedMemebers User[]     @relation("assigned", fields: [assignedIDs], references: [id])
+    description      String?
+    cover            String?
+    coverID          String?
+    Comment          Comment[]
+    Label            Label[]
+}
+
+model Comment {
+    id          String    @id @default(auto()) @map("_id") @db.ObjectId
+    content     String
+    user        User      @relation(fields: [userId], references: [id])
+    userId      String    @db.ObjectId
+    boardCard   BoardCard @relation(fields: [boardCardId], references: [id])
+    boardCardId String    @db.ObjectId
+    createdAt   DateTime  @default(now())
+}
+
+model Label {
+    id          String    @id @default(auto()) @map("_id") @db.ObjectId
+    name        String
+    labelColor  String
+    boardCard   BoardCard @relation(fields: [boardCardId], references: [id])
+    boardCardId String    @db.ObjectId
+}
+
+enum Visibility {
+    PUBLIC
+    PRIVATE
 }
