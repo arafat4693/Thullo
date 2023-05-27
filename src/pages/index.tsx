@@ -20,8 +20,6 @@ const Home = ({
   const [showModal, setShowModal] = useState<boolean>(false);
   const [loginModal, setLoginModal] = useState<boolean>(false);
 
-  console.log(userSession);
-
   return (
     <>
       <AppHeader
