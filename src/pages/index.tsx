@@ -1,4 +1,4 @@
-import { Alert, Button } from "flowbite-react";
+import { Alert, Button, Spinner } from "flowbite-react";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
@@ -8,17 +8,37 @@ import { useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
 import BoardDetailModal from "~/components/boardModal/BoardDetailModal";
 import BoardCard from "~/components/home/BoardCard";
+import Boards from "~/components/home/Boards";
 import CreateBoardModal from "~/components/home/CreateBoardModal";
 import LoginModal from "~/components/home/LoginModal";
 import AppHeader from "~/components/layout/AppHeader";
 import Modal from "~/components/layout/Modal";
+import { api } from "~/utils/api";
 
 const Home = ({
   userSession,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
+  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+    api.board.getAll.useInfiniteQuery(
+      {},
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      }
+    );
+
+  // console.log(allBoards);
+
   const [showModal, setShowModal] = useState<boolean>(false);
   const [loginModal, setLoginModal] = useState<boolean>(false);
+
+  if (isError) {
+    <Alert color="failure">
+      <span>
+        <span className="font-medium">Server error!</span> Please try again
+        later.
+      </span>
+    </Alert>;
+  }
 
   return (
     <>
@@ -29,23 +49,30 @@ const Home = ({
       />
 
       <section className="mx-auto w-[80rem] max-w-full p-3">
-        {userSession && (
-          <div className="flex items-center justify-between pt-8">
-            <h2 className="text-lg font-semibold text-gray-700">All Boards</h2>
-            <Button onClick={() => setShowModal(true)}>
-              <AiOutlinePlus className="mr-1.5 text-base" />
-              Add
-            </Button>
-          </div>
-        )}
-
         {userSession ? (
-          <main className="mt-8 grid grid-cols-4 gap-7">
-            <BoardCard />
-            <BoardCard />
-            <BoardCard />
-            <BoardCard />
-          </main>
+          <>
+            <div className="flex items-center justify-between pt-8">
+              <h2 className="text-lg font-semibold text-gray-700">
+                All Boards
+              </h2>
+              <Button onClick={() => setShowModal(true)}>
+                <AiOutlinePlus className="mr-1.5 text-base" />
+                Add
+              </Button>
+            </div>
+
+            {isLoading ? (
+              <div className="mt-8 flex justify-center">
+                <Spinner aria-label="Large spinner example" size="lg" />
+              </div>
+            ) : (
+              <Boards
+                allBoard={data?.pages.flatMap((page) => page.allBoards)}
+                hasMore={hasNextPage}
+                fetchNewBoards={fetchNextPage}
+              />
+            )}
+          </>
         ) : (
           <Alert color="info">
             <span>

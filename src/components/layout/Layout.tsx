@@ -1,16 +1,11 @@
 import Head from "next/head";
-import AppHeader from "./AppHeader";
-import { ReactElement, useState } from "react";
-import Modal from "./Modal";
-import LoginModal from "../home/LoginModal";
+import { ReactElement } from "react";
 
 interface LayoutProps {
   children: ReactElement;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const [showModal, setShowModal] = useState<boolean>(false);
-
   return (
     <section className="flex min-h-screen w-screen flex-col bg-white">
       <Head>

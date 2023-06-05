@@ -39,10 +39,20 @@ export const boardRouter = createTRPCRouter({
               title: true,
               cover: true,
               members: {
+                where: {
+                  id: {
+                    not: session.user.id,
+                  },
+                },
                 select: {
                   id: true,
                   name: true,
                   image: true,
+                },
+              },
+              _count: {
+                select: {
+                  members: true,
                 },
               },
             },
@@ -55,4 +65,54 @@ export const boardRouter = createTRPCRouter({
         }
       }
     ),
+  getAll: protectedProcedure
+    .input(
+      z.object({ limit: z.number().optional(), cursor: z.string().optional() })
+    )
+    .query(async ({ ctx, input: { limit = 15, cursor } }) => {
+      try {
+        const allBoards = await ctx.prisma.board.findMany({
+          cursor: cursor ? { id: cursor } : undefined,
+          take: limit + 1,
+          orderBy: {
+            createdAt: "desc",
+          },
+          select: {
+            id: true,
+            title: true,
+            cover: true,
+            members: {
+              where: {
+                id: {
+                  not: ctx.session.user.id,
+                },
+              },
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+              take: 3,
+            },
+            _count: {
+              select: {
+                members: true,
+              },
+            },
+          },
+        });
+
+        let nextCursor: typeof cursor | undefined;
+
+        if (allBoards.length > limit) {
+          const lastItem = allBoards.pop();
+          nextCursor = lastItem?.id;
+        }
+
+        return { allBoards, nextCursor };
+      } catch (err: any) {
+        console.log(err);
+        throw new TRPCError(formatError(err));
+      }
+    }),
 });

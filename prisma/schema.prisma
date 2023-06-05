@@ -74,8 +74,8 @@ model VerificationToken {
 
 model Board {
     id          String     @id @default(auto()) @map("_id") @db.ObjectId
-    cover       String?
-    coverID     String?
+    cover       String
+    coverID     String
     description String?
     title       String
     visibility  Visibility @default(PUBLIC)
