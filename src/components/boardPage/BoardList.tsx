@@ -1,12 +1,17 @@
 import { BiMessageDetail } from "react-icons/bi";
 import BoardListMenu from "./BoardListMenu";
-import { Avatar } from "flowbite-react";
+import { Avatar, Button } from "flowbite-react";
 import AssignMember from "../boardModal/AssignMember";
 import { AiOutlinePlus } from "react-icons/ai";
 import { IoIosAttach } from "react-icons/io";
 import Image from "next/image";
+import { Dispatch, SetStateAction } from "react";
 
-export default function BoardList() {
+interface Props {
+  setShowModal: Dispatch<SetStateAction<boolean>>;
+}
+
+export default function BoardList({ setShowModal }: Props) {
   return (
     <div className="w-64 shrink-0">
       <header className="flex items-center justify-between text-sm font-semibold text-gray-700">
@@ -23,7 +28,10 @@ export default function BoardList() {
               className="h-full w-full rounded-xl object-cover"
             />
           </figure>
-          <h3 className="mt-4 text-base font-semibold text-gray-700">
+          <h3
+            onClick={() => setShowModal(true)}
+            className="mt-4 cursor-pointer text-base font-semibold text-gray-700 hover:underline"
+          >
             Add what you'd like to work on below
           </h3>
 
@@ -128,6 +136,8 @@ export default function BoardList() {
           </footer>
         </main>
       </section>
+
+      <Button className="mt-5 w-full">Add Another Card</Button>
     </div>
   );
 }

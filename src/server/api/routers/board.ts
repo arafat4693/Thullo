@@ -6,6 +6,43 @@ import cloudinary from "~/utils/cloudinaryConfig";
 import { formatError } from "~/utils/functions";
 import { CreateBoardInput } from "~/utils/zodSchemas";
 
+interface MembersManipulationProps {
+  currentUserID: string;
+  take?: number;
+}
+
+function membersManipulation({
+  currentUserID,
+  take,
+}: MembersManipulationProps) {
+  return {
+    where: {
+      id: {
+        not: currentUserID,
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      image: true,
+    },
+    take,
+  };
+}
+
+function isMember({ boardID, userID }: { boardID: string; userID: string }) {
+  return {
+    where: {
+      id: boardID,
+      members: {
+        some: {
+          id: userID,
+        },
+      },
+    },
+  };
+}
+
 export const boardRouter = createTRPCRouter({
   create: protectedProcedure
     .input(CreateBoardInput)
@@ -38,18 +75,7 @@ export const boardRouter = createTRPCRouter({
               id: true,
               title: true,
               cover: true,
-              members: {
-                where: {
-                  id: {
-                    not: session.user.id,
-                  },
-                },
-                select: {
-                  id: true,
-                  name: true,
-                  image: true,
-                },
-              },
+              members: membersManipulation({ currentUserID: session.user.id }),
               _count: {
                 select: {
                   members: true,
@@ -77,23 +103,21 @@ export const boardRouter = createTRPCRouter({
           orderBy: {
             createdAt: "desc",
           },
+          where: {
+            members: {
+              some: {
+                id: ctx.session.user.id,
+              },
+            },
+          },
           select: {
             id: true,
             title: true,
             cover: true,
-            members: {
-              where: {
-                id: {
-                  not: ctx.session.user.id,
-                },
-              },
-              select: {
-                id: true,
-                name: true,
-                image: true,
-              },
+            members: membersManipulation({
+              currentUserID: ctx.session.user.id,
               take: 3,
-            },
+            }),
             _count: {
               select: {
                 members: true,
@@ -102,7 +126,7 @@ export const boardRouter = createTRPCRouter({
           },
         });
 
-        let nextCursor: typeof cursor | undefined;
+        let nextCursor: typeof cursor = undefined;
 
         if (allBoards.length > limit) {
           const lastItem = allBoards.pop();
@@ -115,4 +139,154 @@ export const boardRouter = createTRPCRouter({
         throw new TRPCError(formatError(err));
       }
     }),
+
+  getSingle: protectedProcedure
+    .input(z.object({ boardID: z.string() }))
+    .query(async ({ ctx: { prisma, session }, input: { boardID } }) => {
+      try {
+        const isMemberOfBoard = await prisma.board.findFirst(
+          isMember({ boardID, userID: session.user.id })
+        );
+
+        const board = await prisma.board.findUniqueOrThrow({
+          where: {
+            id: boardID,
+          },
+          select: {
+            id: true,
+            title: true,
+            visibility: true,
+            createdAt: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+            members: membersManipulation({
+              currentUserID: session.user.id,
+              take: 5,
+            }),
+            boardLists: {
+              select: {
+                id: true,
+                name: true,
+                cards: {
+                  select: {
+                    id: true,
+                    title: true,
+                    Labels: true,
+                    cover: true,
+                    assignedMembers: membersManipulation({
+                      currentUserID: session.user.id,
+                      take: 2,
+                    }),
+                    _count: {
+                      select: {
+                        Comments: true,
+                        Attachments: true,
+                        assignedMembers: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        return { ...board, isMemberOfBoard: !!isMemberOfBoard };
+      } catch (err) {
+        console.log(err);
+        throw new TRPCError(formatError(err));
+      }
+    }),
+
+  createList: protectedProcedure
+    .input(
+      z.object({
+        boardID: z.string(),
+        name: z.string(),
+      })
+    )
+    .mutation(
+      async ({ ctx: { prisma, session }, input: { boardID, name } }) => {
+        try {
+          await prisma.board.findFirstOrThrow(
+            isMember({ boardID, userID: session.user.id })
+          );
+
+          const newList = await prisma.boardList.create({
+            data: {
+              Board: {
+                connect: {
+                  id: boardID,
+                },
+              },
+              name,
+            },
+            select: {
+              id: true,
+              name: true,
+            },
+          });
+
+          return newList;
+        } catch (err) {
+          console.log(err);
+          throw new TRPCError(formatError(err));
+        }
+      }
+    ),
+  createCard: protectedProcedure
+    .input(
+      z.object({
+        listID: z.string(),
+        title: z.string(),
+        boardID: z.string(),
+      })
+    )
+    .mutation(
+      async ({
+        ctx: { prisma, session },
+        input: { listID, title, boardID },
+      }) => {
+        try {
+          await prisma.board.findFirstOrThrow(
+            isMember({ boardID, userID: session.user.id })
+          );
+
+          const newCard = await prisma.boardCard.create({
+            data: {
+              BoardList: {
+                connect: {
+                  id: listID,
+                },
+              },
+              assignedMembers: {
+                connect: {
+                  id: session.user.id,
+                },
+              },
+              creator: {
+                connect: {
+                  id: session.user.id,
+                },
+              },
+              title,
+            },
+            select: {
+              id: true,
+              title: true,
+            },
+          });
+
+          return newCard;
+        } catch (err) {
+          console.log(err);
+          throw new TRPCError(formatError(err));
+        }
+      }
+    ),
 });

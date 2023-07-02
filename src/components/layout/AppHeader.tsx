@@ -7,7 +7,7 @@ import { signOut, useSession } from "next-auth/react";
 import { Session } from "next-auth";
 
 interface Props {
-  setLoginModal: Dispatch<SetStateAction<boolean>>;
+  setLoginModal?: Dispatch<SetStateAction<boolean>>;
   userSession: Session | null;
   boardPage: boolean;
 }
@@ -80,7 +80,9 @@ export default function AppHeader({
             </div>
           </>
         ) : (
-          <Button onClick={() => setLoginModal(true)}>Log in</Button>
+          setLoginModal && (
+            <Button onClick={() => setLoginModal(true)}>Log in</Button>
+          )
         )}
       </nav>
     </header>

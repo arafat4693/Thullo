@@ -8,8 +8,7 @@ import {
 } from "react-icons/ai";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import useCreateBoard from "~/hooks/board/useCreateBoard";
-import { useForm } from "react-hook-form";
-import type { FieldValues } from "react-hook-form";
+import { useForm, type FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateBoardInput, CreateBoardInputType } from "~/utils/zodSchemas";
 

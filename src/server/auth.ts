@@ -6,9 +6,13 @@ import {
 } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
+import { LoginUser } from "~/utils/zodSchemas";
+import { z } from "zod";
+import bcrypt from "bcrypt";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -55,6 +59,44 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+    }),
+    CredentialsProvider({
+      id: "credentials",
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email ", placeholder: "Email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        try {
+          // const {email, password} = LoginUser.parse(credentials)
+          // const {email, password} = credentials
+
+          const user = await prisma.user.findFirst({
+            where: { email: credentials?.email },
+          });
+
+          if (user && user.hashedPassword && credentials?.password) {
+            //? Check password
+            const isCorrectPass = bcrypt.compareSync(
+              credentials.password,
+              user.hashedPassword
+            );
+
+            if (!isCorrectPass) throw new Error("Incorrect password");
+
+            return user;
+          } else {
+            throw new Error("User not found!!!");
+          }
+        } catch (err) {
+          if (err instanceof z.ZodError) {
+            throw new Error("Invalid credentials");
+          }
+          console.log(err);
+          throw new Error("Server error. Please try again later!!!");
+        }
+      },
     }),
     /**
      * ...add more providers here.

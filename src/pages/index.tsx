@@ -23,10 +23,11 @@ const Home = ({
       {},
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
+        enabled: userSession?.user !== undefined,
       }
     );
 
-  // console.log(allBoards);
+  // console.log(data);
 
   const [showModal, setShowModal] = useState<boolean>(false);
   const [loginModal, setLoginModal] = useState<boolean>(false);
@@ -89,18 +90,13 @@ const Home = ({
           setShowModal={setShowModal}
           modalBody={<CreateBoardModal setShowModal={setShowModal} />}
         />
-        // <Modal
-        //   showModal={showModal}
-        //   setShowModal={setShowModal}
-        //   modalBody={<BoardDetailModal setShowModal={setShowModal} />}
-        // />
       )}
 
       {loginModal && (
         <Modal
-          showModal={showModal}
-          setShowModal={setShowModal}
-          modalBody={<LoginModal setShowModal={setShowModal} />}
+          showModal={loginModal}
+          setShowModal={setLoginModal}
+          modalBody={<LoginModal setShowModal={setLoginModal} />}
         />
       )}
     </>
