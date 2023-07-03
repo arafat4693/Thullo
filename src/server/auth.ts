@@ -41,15 +41,6 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authOptions: NextAuthOptions = {
-  callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
-  },
   adapter: PrismaAdapter(prisma),
   providers: [
     DiscordProvider({
@@ -61,41 +52,32 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
     CredentialsProvider({
-      id: "credentials",
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email ", placeholder: "Email" },
-        password: { label: "Password", type: "password" },
+        email: { label: "email", type: "text " },
+        password: { label: "password", type: "password" },
       },
       async authorize(credentials) {
-        try {
-          // const {email, password} = LoginUser.parse(credentials)
-          // const {email, password} = credentials
-
-          const user = await prisma.user.findFirst({
-            where: { email: credentials?.email },
-          });
-
-          if (user && user.hashedPassword && credentials?.password) {
-            //? Check password
-            const isCorrectPass = bcrypt.compareSync(
-              credentials.password,
-              user.hashedPassword
-            );
-
-            if (!isCorrectPass) throw new Error("Incorrect password");
-
-            return user;
-          } else {
-            throw new Error("User not found!!!");
-          }
-        } catch (err) {
-          if (err instanceof z.ZodError) {
-            throw new Error("Invalid credentials");
-          }
-          console.log(err);
-          throw new Error("Server error. Please try again later!!!");
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Invalid credentials");
         }
+
+        const user = await prisma.user.findFirst({
+          where: { email: credentials.email },
+        });
+
+        if (!user || !user?.hashedPassword) {
+          throw new Error("Invalid credentials");
+        }
+
+        const isCorrectPass = bcrypt.compareSync(
+          credentials.password,
+          user.hashedPassword
+        );
+
+        if (!isCorrectPass) throw new Error("Invalid credentials");
+
+        return user;
       },
     }),
     /**
@@ -108,7 +90,30 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
+  callbacks: {
+    session({ session, token }) {
+      // console.log("Session callback", session, token);
+      return { ...session, user: { ...session.user, id: token.id } };
+    },
+    jwt({ token, user }) {
+      // console.log("jwt callback", token, user);
+      if (user) {
+        return {
+          ...token,
+          id: user.id,
+        };
+      }
+      return token;
+    },
+  },
   secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/",
+  },
+  debug: process.env.NODE_ENV === "development",
 };
 
 /**

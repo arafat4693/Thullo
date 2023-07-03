@@ -1,9 +1,10 @@
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { formatError } from "~/utils/functions";
 import { TRPCError } from "@trpc/server";
 import { RegisterUser } from "~/utils/zodSchemas";
 import bcrypt from "bcrypt";
 import cloudinary from "~/utils/cloudinaryConfig";
+import { z } from "zod";
 
 export const userRouter = createTRPCRouter({
   register: publicProcedure
@@ -47,4 +48,64 @@ export const userRouter = createTRPCRouter({
         throw new TRPCError(formatError(err));
       }
     }),
+  getUsers: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        cursor: z.string().optional(),
+        boardID: z.string(),
+        searchKey: z.string(),
+      })
+    )
+    .query(
+      async ({
+        ctx: { prisma },
+        input: { boardID, limit = 3, cursor, searchKey },
+      }) => {
+        try {
+          const members = await prisma.board.findUniqueOrThrow({
+            where: {
+              id: boardID,
+            },
+            select: {
+              memberIDs: true,
+            },
+          });
+
+          const users = await prisma.user.findMany({
+            take: limit + 1,
+            cursor: cursor === undefined ? undefined : { id: cursor },
+            where: {
+              id: {
+                notIn: members.memberIDs,
+              },
+              name: {
+                contains: searchKey,
+                mode: "insensitive",
+              },
+            },
+            orderBy: {
+              name: "asc",
+            },
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          });
+
+          let nextCursor: typeof cursor = undefined;
+
+          if (users.length > limit) {
+            const lastUser = users.pop();
+            nextCursor = lastUser?.id;
+          }
+
+          return { users, nextCursor };
+        } catch (err: any) {
+          console.log(err);
+          throw new TRPCError(formatError(err));
+        }
+      }
+    ),
 });

@@ -28,6 +28,9 @@ const Home = ({
     );
 
   // console.log(data);
+  // const user_Session = useSession();
+
+  // console.log(user_Session);
 
   const [showModal, setShowModal] = useState<boolean>(false);
   const [loginModal, setLoginModal] = useState<boolean>(false);
@@ -43,11 +46,7 @@ const Home = ({
 
   return (
     <>
-      <AppHeader
-        boardPage={false}
-        userSession={userSession}
-        setLoginModal={setLoginModal}
-      />
+      <AppHeader userSession={userSession} setLoginModal={setLoginModal} />
 
       <section className="mx-auto w-[80rem] max-w-full p-3">
         {userSession ? (
@@ -108,17 +107,8 @@ export default Home;
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const userSession = await getSession(context);
 
-  // const ssg = createProxySSGHelpers({
-  //   router: appRouter,
-  //   ctx: createInnerTRPCContext({ session: userSession }),
-  //   transformer: superjson,
-  // });
-
-  // await ssg.tweet.getTweets.prefetch();
-
   return {
     props: {
-      // trpcState: ssg.dehydrate(),
       userSession,
     },
   };

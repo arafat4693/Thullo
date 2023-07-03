@@ -13,10 +13,6 @@ export default function LoginModal({ setShowModal }: Props) {
   const [userForm, setUserForm] = useState<"Login" | "Register">("Login");
   const [parent] = useAutoAnimate();
 
-  const userSession = useSession();
-
-  console.log(userSession);
-
   return (
     <div
       className="max-h-[96%] w-96 overflow-y-scroll rounded-lg bg-white p-5 shadow-sm scrollbar scrollbar-w-0"

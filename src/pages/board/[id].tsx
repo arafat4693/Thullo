@@ -1,4 +1,4 @@
-import { Avatar, Button } from "flowbite-react";
+import { Alert, Avatar, Button } from "flowbite-react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { getSession } from "next-auth/react";
 import { useState } from "react";
@@ -11,15 +11,51 @@ import Visibility from "~/components/boardPage/Visibility";
 import AppHeader from "~/components/layout/AppHeader";
 import Modal from "~/components/layout/Modal";
 import MyButton from "~/components/layout/MyButton";
+import { createServerSideHelpers } from "@trpc/react-query/server";
+import { appRouter } from "~/server/api/root";
+import { createInnerTRPCContext } from "~/server/api/trpc";
+import superjson from "superjson";
+import { api } from "~/utils/api";
 
 export default function board({
   userSession,
+  boardID,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [showDropDown, setShowDropDown] = useState<boolean>(false);
+  const { data: currentBoard } = api.board.getSingle.useQuery(
+    { boardID },
+    {
+      enabled: !!userSession,
+    }
+  );
+
+  if (!userSession) {
+    return (
+      <Alert color="failure">
+        <span>
+          <span className="font-medium">Please Login first!</span> Permission
+          Denied!!!
+        </span>
+      </Alert>
+    );
+  }
+
+  if (!currentBoard) {
+    return (
+      <Alert color="failure">
+        <span>
+          <span className="font-medium">Not found!</span> Board not found.
+        </span>
+      </Alert>
+    );
+  }
+
+  //TODO: Have to make my own version of dropdown
 
   return (
     <>
-      <AppHeader boardPage={true} userSession={userSession} />
+      <AppHeader boardName={currentBoard.title} userSession={userSession} />
 
       <section className="mt-4 w-full bg-white">
         <main className="mx-auto w-[92rem] max-w-full p-3">
@@ -60,13 +96,13 @@ export default function board({
             <BoardList />
           </article> */}
 
-          <article className="styledScrollbarX mt-5 flex gap-x-8 rounded-xl bg-sky-100/60 p-4">
+          {/* <article className="styledScrollbarX mt-5 flex gap-x-8 rounded-xl bg-sky-100/60 p-4">
             <div className="flex w-fit shrink-0 gap-x-8 overflow-hidden">
               <BoardList setShowModal={setShowModal} />
               <BoardList setShowModal={setShowModal} />
             </div>
             <Button className="w-60 shrink-0">Add Another List</Button>
-          </article>
+          </article> */}
         </main>
       </section>
 
@@ -98,23 +134,23 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         permanent: false,
         destination: "/",
       },
-      props: { userSession },
+      props: { userSession, boardID },
     };
   }
 
-  // const ssg = createProxySSGHelpers({
-  //   router: appRouter,
-  //   ctx: createInnerTRPCContext({ session: userSession }),
-  //   transformer: superjson,
-  // });
+  const ssg = createServerSideHelpers({
+    router: appRouter,
+    ctx: createInnerTRPCContext({ session: userSession }),
+    transformer: superjson,
+  });
 
-  // await ssg.user.getUser.prefetch({ userID: boardID });
+  await ssg.board.getSingle.prefetch({ boardID });
 
   return {
     props: {
-      // trpcState: ssg.dehydrate(),
+      trpcState: ssg.dehydrate(),
       userSession,
-      // boardID,
+      boardID,
     },
   };
 }

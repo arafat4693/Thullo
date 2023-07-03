@@ -43,6 +43,16 @@ function isMember({ boardID, userID }: { boardID: string; userID: string }) {
   };
 }
 
+function sortAscDesc() {
+  const random = Math.random(); // Generate a random number between 0 and 1
+
+  if (random < 0.5) {
+    return "asc";
+  } else {
+    return "desc";
+  }
+}
+
 export const boardRouter = createTRPCRouter({
   create: protectedProcedure
     .input(CreateBoardInput)
@@ -114,10 +124,13 @@ export const boardRouter = createTRPCRouter({
             id: true,
             title: true,
             cover: true,
-            members: membersManipulation({
-              currentUserID: ctx.session.user.id,
-              take: 3,
-            }),
+            members: {
+              ...membersManipulation({
+                currentUserID: ctx.session.user.id,
+                take: 3,
+              }),
+              orderBy: { name: sortAscDesc() },
+            },
             _count: {
               select: {
                 members: true,
@@ -144,7 +157,7 @@ export const boardRouter = createTRPCRouter({
     .input(z.object({ boardID: z.string() }))
     .query(async ({ ctx: { prisma, session }, input: { boardID } }) => {
       try {
-        const isMemberOfBoard = await prisma.board.findFirst(
+        const isMemberOfBoard = await prisma.board.count(
           isMember({ boardID, userID: session.user.id })
         );
 
@@ -164,10 +177,13 @@ export const boardRouter = createTRPCRouter({
                 image: true,
               },
             },
-            members: membersManipulation({
-              currentUserID: session.user.id,
-              take: 5,
-            }),
+            members: {
+              ...membersManipulation({
+                currentUserID: session.user.id,
+                take: 5,
+              }),
+              orderBy: { name: sortAscDesc() },
+            },
             boardLists: {
               select: {
                 id: true,
@@ -178,10 +194,13 @@ export const boardRouter = createTRPCRouter({
                     title: true,
                     Labels: true,
                     cover: true,
-                    assignedMembers: membersManipulation({
-                      currentUserID: session.user.id,
-                      take: 2,
-                    }),
+                    assignedMembers: {
+                      ...membersManipulation({
+                        currentUserID: session.user.id,
+                        take: 2,
+                      }),
+                      orderBy: { name: sortAscDesc() },
+                    },
                     _count: {
                       select: {
                         Comments: true,

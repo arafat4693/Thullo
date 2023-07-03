@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Alert, Button, TextInput } from "flowbite-react";
+import { Alert, Button, Spinner, TextInput } from "flowbite-react";
 import { signIn } from "next-auth/react";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
 import { LoginUser } from "~/utils/zodSchemas";
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export default function LoginForm({ setUserForm }: Props) {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const {
     register,
     handleSubmit,
@@ -23,8 +26,19 @@ export default function LoginForm({ setUserForm }: Props) {
   });
 
   function onSubmit(data: FieldValues) {
+    setIsLoading(true);
     console.log(data);
-    signIn("credentials", { email: data.email, password: data.password });
+    signIn("credentials", { ...data }).then((cb) => {
+      setIsLoading(false);
+
+      if (cb?.ok) {
+        toast.success("Logged in");
+      }
+
+      if (cb?.error) {
+        toast.error(cb.error);
+      }
+    });
   }
 
   return (
@@ -54,7 +68,21 @@ export default function LoginForm({ setUserForm }: Props) {
         </Alert>
       )}
 
-      <Button type="submit">Login</Button>
+      <Button
+        type="submit"
+        className={isLoading ? "pointer-events-none" : "pointer-events-auto"}
+      >
+        {isLoading ? (
+          <>
+            <div className="mr-3">
+              <Spinner size="sm" light={true} />
+            </div>
+            Logging In...
+          </>
+        ) : (
+          "Login"
+        )}
+      </Button>
       <p className="text-sm font-medium text-gray-400">
         Don't have an account?{" "}
         <button

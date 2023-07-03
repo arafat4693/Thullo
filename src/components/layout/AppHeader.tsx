@@ -5,33 +5,36 @@ import MyButton from "./MyButton";
 import { Dispatch, SetStateAction } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { Session } from "next-auth";
+import Link from "next/link";
 
 interface Props {
   setLoginModal?: Dispatch<SetStateAction<boolean>>;
   userSession: Session | null;
-  boardPage: boolean;
+  boardName?: string;
 }
 
 export default function AppHeader({
   setLoginModal,
   userSession,
-  boardPage,
+  boardName,
 }: Props) {
   return (
     <header className="AppHeader w-full border-0 border-b border-solid border-gray-200 bg-white">
       <nav className="mx-auto flex w-[92rem] max-w-full items-center justify-between p-3">
-        <img
-          src="/images/Logo.svg"
-          className="mr-24 h-6 sm:h-9"
-          alt="Tweeter Logo"
-        />
+        <Link href="/">
+          <img
+            src="/images/Logo.svg"
+            className="mr-24 h-6 sm:h-9"
+            alt="Tweeter Logo"
+          />
+        </Link>
         {userSession ? (
           <>
             <div className="flex flex-grow items-center justify-between">
-              {boardPage && (
+              {boardName && (
                 <div className="flex items-center gap-5">
                   <h2 className="text-lg font-semibold text-gray-700">
-                    Devchallenges Board
+                    {boardName}
                   </h2>
                   <span className="h-10 w-0.5 bg-gray-200"></span>
                   <MyButton btnName="All board" BtnIcon={CgMenuGridR} />

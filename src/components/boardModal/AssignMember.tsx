@@ -1,5 +1,8 @@
-import { Avatar, Button, Dropdown, TextInput } from "flowbite-react";
-import { AiOutlinePlus } from "react-icons/ai";
+import { Avatar, Button, Dropdown, Spinner, TextInput } from "flowbite-react";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import { api } from "~/utils/api";
+import AvailableMembers from "./AvailableMembers";
 
 interface Props {
   labelElm: JSX.Element;
@@ -14,6 +17,17 @@ export default function AssignMember({
   title,
   subtitle,
 }: Props) {
+  const [searchKey, setSearchKey] = useState<string>("");
+  const router = useRouter();
+
+  const { data, isLoading, isError, hasNextPage, fetchNextPage } =
+    api.user.getUsers.useInfiniteQuery(
+      { searchKey, boardID: router.query.id as string },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      }
+    );
+
   return (
     <Dropdown
       arrowIcon={false}
@@ -32,17 +46,17 @@ export default function AssignMember({
         className="my-3 rounded-lg shadow-md"
       />
 
-      <div className="styledScrollbar flex max-h-[11.85rem] flex-col gap-3 rounded-lg border border-solid border-gray-300 p-3 shadow-md">
-        <figure className="flex cursor-pointer items-center gap-x-3 hover:bg-gray-200">
-          <Avatar
-            size="sm"
-            img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-          />
-          <figcaption className="text-sm font-bold text-gray-700">
-            Bianca Sosa
-          </figcaption>
-        </figure>
-      </div>
+      {isLoading ? (
+        <div className="mt-8 flex justify-center">
+          <Spinner aria-label="Large spinner example" size="lg" />
+        </div>
+      ) : (
+        <AvailableMembers
+          allMembers={data?.pages.flatMap((page) => page.users)}
+          hasMore={hasNextPage}
+          fetchNewBoards={fetchNextPage}
+        />
+      )}
 
       <Button className="mx-auto mt-5">{btnName}</Button>
     </Dropdown>
