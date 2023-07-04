@@ -51,8 +51,6 @@ export default function board({
     );
   }
 
-  //TODO: Have to make my own version of dropdown
-
   return (
     <>
       <AppHeader boardName={currentBoard.title} userSession={userSession} />
@@ -61,7 +59,7 @@ export default function board({
         <main className="mx-auto w-[92rem] max-w-full p-3">
           <nav className="flex items-start justify-between">
             <div className="flex items-start gap-4">
-              <Visibility />
+              <Visibility boardVisibility={currentBoard.visibility} />
               <Avatar
                 size="sm"
                 img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"

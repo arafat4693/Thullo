@@ -30,7 +30,7 @@ export default function AvailableMembers({
     <div
       id="scrollableDiv"
       ref={parent}
-      className="styledScrollbarY max-h-[9.1rem] rounded-lg border border-solid border-gray-300 p-3 shadow-md"
+      className="styledScrollbarY max-h-[9rem] rounded-lg border border-solid border-gray-300 p-3 shadow-md"
     >
       <InfiniteScroll
         scrollableTarget="scrollableDiv"
@@ -39,14 +39,16 @@ export default function AvailableMembers({
         next={fetchNewBoards}
         className="scrollbar-none"
         loader={
-          <div className="flex justify-center">
+          <div className="mt-3 flex justify-center">
             <Spinner aria-label="Medium sized spinner example" size="md" />
           </div>
         }
       >
-        {allMembers.map((m) => (
+        {allMembers.map((m, idx) => (
           <figure
-            className="mb-3 flex cursor-pointer items-center gap-x-3 hover:bg-gray-200"
+            className={`${
+              idx === allMembers.length - 1 ? "" : "mb-3"
+            } flex cursor-pointer items-center gap-x-3 hover:bg-gray-200`}
             key={m.id}
           >
             <Avatar size="sm" img={m.image ?? undefined} />

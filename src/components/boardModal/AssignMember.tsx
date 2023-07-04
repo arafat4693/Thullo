@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { api } from "~/utils/api";
 import AvailableMembers from "./AvailableMembers";
+import useDebounce from "~/hooks/useDebounce";
 
 interface Props {
   labelElm: JSX.Element;
@@ -18,11 +19,13 @@ export default function AssignMember({
   subtitle,
 }: Props) {
   const [searchKey, setSearchKey] = useState<string>("");
+  const deferredSrcKey = useDebounce(searchKey, 500);
+
   const router = useRouter();
 
   const { data, isLoading, isError, hasNextPage, fetchNextPage } =
     api.user.getUsers.useInfiniteQuery(
-      { searchKey, boardID: router.query.id as string },
+      { searchKey: deferredSrcKey, boardID: router.query.id as string },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
       }
@@ -43,6 +46,8 @@ export default function AssignMember({
         type="text"
         placeholder="User..."
         required={true}
+        onChange={(e) => setSearchKey(e.target.value)}
+        value={searchKey}
         className="my-3 rounded-lg shadow-md"
       />
 

@@ -308,4 +308,37 @@ export const boardRouter = createTRPCRouter({
         }
       }
     ),
+  updateVisibility: protectedProcedure
+    .input(
+      z.object({
+        visibility: z.enum(["PUBLIC", "PRIVATE"]),
+        boardID: z.string(),
+      })
+    )
+    .mutation(
+      async ({ ctx: { prisma, session }, input: { visibility, boardID } }) => {
+        try {
+          const updatedBoard = await prisma.board.updateMany({
+            where: {
+              id: boardID,
+              user: {
+                id: session.user.id,
+              },
+            },
+            data: {
+              visibility,
+            },
+          });
+
+          if (!updatedBoard.count) {
+            throw new Error("Not authorized!!!");
+          }
+
+          return visibility;
+        } catch (err) {
+          console.log(err);
+          throw new TRPCError(formatError(err));
+        }
+      }
+    ),
 });
