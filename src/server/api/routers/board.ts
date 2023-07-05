@@ -258,6 +258,25 @@ export const boardRouter = createTRPCRouter({
         }
       }
     ),
+  // getLists: protectedProcedure.input(z.object({boardID: z.string()})).query(async ({ctx: {prisma, session}, input: {boardID}}) => {
+  //   try{
+  //     const allLists = await prisma.boardList.findMany({
+  //       where: {
+  //         Board: {id: boardID}
+  //       },
+  //       select: {
+  //         id: true,
+  //         name: true,
+  //         cards: {
+
+  //         }
+  //       }
+  //     })
+  //   }catch(err){
+  //     console.log(err);
+  //     throw new TRPCError(formatError(err));
+  //   }
+  // }),
   createCard: protectedProcedure
     .input(
       z.object({

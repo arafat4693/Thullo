@@ -1,7 +1,7 @@
-import { Alert, Avatar, Button } from "flowbite-react";
+import { Alert, Avatar, Button, Spinner, TextInput } from "flowbite-react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { getSession } from "next-auth/react";
-import { useState } from "react";
+import { FormEvent, MouseEvent, useState } from "react";
 import { AiFillLock, AiOutlinePlus } from "react-icons/ai";
 import { BsThreeDots } from "react-icons/bs";
 import AssignMember from "~/components/boardModal/AssignMember";
@@ -16,6 +16,8 @@ import { appRouter } from "~/server/api/root";
 import { createInnerTRPCContext } from "~/server/api/trpc";
 import superjson from "superjson";
 import { api } from "~/utils/api";
+import useCreateBoardList from "~/hooks/board/useCreateBoardList";
+import { toast } from "react-hot-toast";
 
 export default function board({
   userSession,
@@ -23,12 +25,23 @@ export default function board({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
+  const [createListForm, setCreateListForm] = useState<boolean>(false);
   const { data: currentBoard } = api.board.getSingle.useQuery(
     { boardID },
     {
       enabled: !!userSession,
     }
   );
+  const { mutate: createList, isLoading: creatingList } = useCreateBoardList({
+    setCreateListForm,
+  });
+
+  function listCreate(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const title = (e.target as any)[0].value;
+    if (!title) return toast.error("Title is required");
+    createList({ boardID, name: title });
+  }
 
   if (!userSession) {
     return (
@@ -85,22 +98,57 @@ export default function board({
             <MyButton BtnIcon={BsThreeDots} btnName="Show Menu" />
           </nav>
 
-          {/* <article className="styledScrollbarX mt-5 flex gap-x-8 rounded-xl bg-sky-100/60 p-4">
-            <BoardList />
-            <BoardList />
-            <BoardList />
-            <BoardList />
-            <BoardList />
-            <BoardList />
-          </article> */}
-
-          {/* <article className="styledScrollbarX mt-5 flex gap-x-8 rounded-xl bg-sky-100/60 p-4">
+          <article className="styledScrollbarX mt-5 flex gap-x-8 rounded-xl bg-sky-100/60 p-4">
             <div className="flex w-fit shrink-0 gap-x-8 overflow-hidden">
-              <BoardList setShowModal={setShowModal} />
-              <BoardList setShowModal={setShowModal} />
+              {currentBoard.boardLists.map((bl) => (
+                <BoardList
+                  key={bl.id}
+                  boardList={bl}
+                  setShowModal={setShowModal}
+                />
+              ))}
             </div>
-            <Button className="w-60 shrink-0">Add Another List</Button>
-          </article> */}
+            <div className="w-60 shrink-0">
+              <Button
+                className="w-full"
+                onClick={() => setCreateListForm((prev) => !prev)}
+              >
+                Add {currentBoard.boardLists.length ? "Another" : "A"} List
+              </Button>
+              {createListForm && (
+                <form
+                  className="mt-3 w-full rounded-xl border-2 border-solid border-gray-200 bg-white p-2"
+                  onSubmit={listCreate}
+                >
+                  <TextInput
+                    type="text"
+                    placeholder="Enter a title for this list"
+                  />
+                  <Button
+                    type="submit"
+                    color="success"
+                    size="sm"
+                    className={`mt-1 ${
+                      creatingList
+                        ? "pointer-events-none"
+                        : "pointer-events-auto"
+                    }`}
+                  >
+                    {creatingList ? (
+                      <>
+                        <div className="mr-3">
+                          <Spinner size="sm" light={true} />
+                        </div>
+                        Creating
+                      </>
+                    ) : (
+                      "Create"
+                    )}
+                  </Button>
+                </form>
+              )}
+            </div>
+          </article>
         </main>
       </section>
 

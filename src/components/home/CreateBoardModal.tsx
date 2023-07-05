@@ -159,7 +159,7 @@ export default function CreateBoardModal({ setShowModal }: Props) {
               <div className="mr-3">
                 <Spinner size="sm" light={true} />
               </div>
-              Loading
+              Creating
             </>
           ) : (
             <>

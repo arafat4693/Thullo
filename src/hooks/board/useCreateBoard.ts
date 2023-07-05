@@ -13,7 +13,7 @@ export default function useCreateBoard({ setShowModal }: Props) {
     onSuccess: (data) => {
       toast.success("Created successfully😊");
       setShowModal(false);
-      console.log(data);
+      // console.log(data);
 
       const updateData: Parameters<
         typeof utils.board.getAll.setInfiniteData
@@ -24,7 +24,6 @@ export default function useCreateBoard({ setShowModal }: Props) {
           ...oldData,
           pages: [
             {
-              // ...oldData.pages[0],
               allBoards: [data, ...(oldData.pages[0]?.allBoards || [])],
               nextCursor: oldData.pages[0]?.nextCursor,
             },

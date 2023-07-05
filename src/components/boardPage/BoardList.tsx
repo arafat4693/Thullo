@@ -6,16 +6,18 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { IoIosAttach } from "react-icons/io";
 import Image from "next/image";
 import { Dispatch, SetStateAction } from "react";
+import { RouterOutputs } from "~/utils/api";
 
 interface Props {
   setShowModal: Dispatch<SetStateAction<boolean>>;
+  boardList: RouterOutputs["board"]["getSingle"]["boardLists"][number];
 }
 
-export default function BoardList({ setShowModal }: Props) {
+export default function BoardList({ setShowModal, boardList }: Props) {
   return (
     <div className="w-64 shrink-0">
       <header className="flex items-center justify-between text-sm font-semibold text-gray-700">
-        Backlog <BoardListMenu />
+        {boardList.name} <BoardListMenu />
       </header>
 
       <section className="mt-4 flex flex-col gap-3">
@@ -56,7 +58,7 @@ export default function BoardList({ setShowModal }: Props) {
                 img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
               />
 
-              <AssignMember
+              {/* <AssignMember
                 title="Invite to Board"
                 subtitle="Search users you want to invite to"
                 btnName="Add"
@@ -65,7 +67,7 @@ export default function BoardList({ setShowModal }: Props) {
                     <AiOutlinePlus />
                   </p>
                 }
-              />
+              /> */}
             </div>
 
             <ul className="flex items-center gap-2.5">
