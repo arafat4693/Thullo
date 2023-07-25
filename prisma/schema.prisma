@@ -95,13 +95,13 @@ model BoardList {
     id      String      @id @default(auto()) @map("_id") @db.ObjectId
     name    String
     cards   BoardCard[]
-    Board   Board?      @relation(fields: [boardId], references: [id])
+    Board   Board?      @relation(fields: [boardId], references: [id], onDelete: Cascade)
     boardId String?     @db.ObjectId
 }
 
 model BoardCard {
     id              String       @id @default(auto()) @map("_id") @db.ObjectId
-    BoardList       BoardList?   @relation(fields: [boardListId], references: [id])
+    BoardList       BoardList?   @relation(fields: [boardListId], references: [id], onDelete: Cascade)
     boardListId     String?      @db.ObjectId
     title           String
     assignedIDs     String[]     @db.ObjectId

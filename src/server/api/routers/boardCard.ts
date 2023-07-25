@@ -106,4 +106,78 @@ export const boardCardRouter = createTRPCRouter({
         }
       }
     ),
+  deleteComment: protectedProcedure
+    .input(z.object({ commentID: z.string() }))
+    .mutation(async ({ ctx: { prisma, session }, input: { commentID } }) => {
+      try {
+        const deleteComment = await prisma.comment.deleteMany({
+          where: {
+            id: commentID,
+            OR: [
+              {
+                user: {
+                  id: session.user.id,
+                },
+              },
+              {
+                boardCard: {
+                  BoardList: {
+                    Board: {
+                      user: {
+                        id: session.user.id,
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        });
+
+        if (deleteComment.count) {
+          return "Successfully deleted";
+        } else {
+          throw new Error("Server error. Please try again later");
+        }
+      } catch (err) {
+        console.log(err);
+        throw new TRPCError(formatError(err));
+      }
+    }),
+  updateComment: protectedProcedure
+    .input(z.object({ commentID: z.string(), content: z.string() }))
+    .mutation(
+      async ({ ctx: { prisma, session }, input: { commentID, content } }) => {
+        try {
+          const updateComment = await prisma.comment.updateMany({
+            where: {
+              id: commentID,
+              user: {
+                id: session.user.id,
+              },
+            },
+            data: {
+              content,
+            },
+          });
+
+          if (updateComment.count) {
+            return "Successfully updated";
+          } else {
+            throw new Error("Server error. Please try again later");
+          }
+        } catch (err) {
+          console.log(err);
+          throw new TRPCError(formatError(err));
+        }
+      }
+    ),
+  // createLabel: protectedProcedure.input(z.object({name: z.string(), labelColor: z.string(), cardID: z.string()})).mutation(async ({ctx: {prisma,session}, input: {name, labelColor, cardID}}) => {
+  //   try{
+  //     const newLabel = await prisma.label.create()
+  //   }catch(err){
+  //     console.log(err);
+  //     throw new TRPCError(formatError(err));
+  //   }
+  // })
 });

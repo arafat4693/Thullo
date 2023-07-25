@@ -101,6 +101,29 @@ export const boardRouter = createTRPCRouter({
         }
       }
     ),
+  deleteBoard: protectedProcedure
+    .input(z.object({ boardID: z.string() }))
+    .mutation(async ({ ctx: { prisma, session }, input: { boardID } }) => {
+      try {
+        const deleteBoard = await prisma.board.deleteMany({
+          where: {
+            id: boardID,
+            user: {
+              id: session.user.id,
+            },
+          },
+        });
+
+        if (deleteBoard.count) {
+          return "Successfully Deleted";
+        } else {
+          throw new Error("Server Error. Please try again later");
+        }
+      } catch (err) {
+        console.log(err);
+        throw new TRPCError(formatError(err));
+      }
+    }),
   getAll: protectedProcedure
     .input(
       z.object({ limit: z.number().optional(), cursor: z.string().optional() })
@@ -258,25 +281,64 @@ export const boardRouter = createTRPCRouter({
         }
       }
     ),
-  // getLists: protectedProcedure.input(z.object({boardID: z.string()})).query(async ({ctx: {prisma, session}, input: {boardID}}) => {
-  //   try{
-  //     const allLists = await prisma.boardList.findMany({
-  //       where: {
-  //         Board: {id: boardID}
-  //       },
-  //       select: {
-  //         id: true,
-  //         name: true,
-  //         cards: {
+  renameBoardList: protectedProcedure
+    .input(z.object({ boardListID: z.string(), newName: z.string() }))
+    .mutation(
+      async ({ ctx: { prisma, session }, input: { boardListID, newName } }) => {
+        try {
+          const renameList = await prisma.boardList.updateMany({
+            where: {
+              id: boardListID,
+              Board: {
+                members: {
+                  some: {
+                    id: session.user.id,
+                  },
+                },
+              },
+            },
+            data: {
+              name: newName,
+            },
+          });
 
-  //         }
-  //       }
-  //     })
-  //   }catch(err){
-  //     console.log(err);
-  //     throw new TRPCError(formatError(err));
-  //   }
-  // }),
+          if (!renameList.count) {
+            throw new Error("Internal error");
+          }
+
+          return newName;
+        } catch (err) {
+          console.log(err);
+          throw new TRPCError(formatError(err));
+        }
+      }
+    ),
+  deleteList: protectedProcedure
+    .input(z.object({ listID: z.string() }))
+    .mutation(async ({ ctx: { session, prisma }, input: { listID } }) => {
+      try {
+        const deleteList = await prisma.boardList.deleteMany({
+          where: {
+            id: listID,
+            Board: {
+              members: {
+                some: {
+                  id: session.user.id,
+                },
+              },
+            },
+          },
+        });
+
+        if (!deleteList.count) {
+          throw new Error("Internal error");
+        }
+        return listID;
+      } catch (err) {
+        console.log(err);
+        throw new TRPCError(formatError(err));
+      }
+    }),
   createCard: protectedProcedure
     .input(
       z.object({

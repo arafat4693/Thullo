@@ -18,6 +18,8 @@ import superjson from "superjson";
 import { api } from "~/utils/api";
 import useCreateBoardList from "~/hooks/board/useCreateBoardList";
 import { toast } from "react-hot-toast";
+import CreateForm from "~/components/boardPage/CreateForm";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 export default function board({
   userSession,
@@ -26,6 +28,7 @@ export default function board({
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showDropDown, setShowDropDown] = useState<boolean>(false);
   const [createListForm, setCreateListForm] = useState<boolean>(false);
+  const [parent] = useAutoAnimate();
   const { data: currentBoard } = api.board.getSingle.useQuery(
     { boardID },
     {
@@ -99,15 +102,21 @@ export default function board({
           </nav>
 
           <article className="styledScrollbarX mt-5 flex gap-x-8 rounded-xl bg-sky-100/60 p-4">
-            <div className="flex w-fit shrink-0 gap-x-8 overflow-hidden">
-              {currentBoard.boardLists.map((bl) => (
-                <BoardList
-                  key={bl.id}
-                  boardList={bl}
-                  setShowModal={setShowModal}
-                />
-              ))}
-            </div>
+            {currentBoard.boardLists.length ? (
+              <div
+                className="flex w-fit shrink-0 gap-x-8 overflow-hidden"
+                ref={parent}
+              >
+                {currentBoard.boardLists.map((bl) => (
+                  <BoardList
+                    key={bl.id}
+                    boardID={boardID}
+                    boardList={bl}
+                    setShowModal={setShowModal}
+                  />
+                ))}
+              </div>
+            ) : null}
             <div className="w-60 shrink-0">
               <Button
                 className="w-full"
@@ -116,36 +125,11 @@ export default function board({
                 Add {currentBoard.boardLists.length ? "Another" : "A"} List
               </Button>
               {createListForm && (
-                <form
-                  className="mt-3 w-full rounded-xl border-2 border-solid border-gray-200 bg-white p-2"
+                <CreateForm
                   onSubmit={listCreate}
-                >
-                  <TextInput
-                    type="text"
-                    placeholder="Enter a title for this list"
-                  />
-                  <Button
-                    type="submit"
-                    color="success"
-                    size="sm"
-                    className={`mt-1 ${
-                      creatingList
-                        ? "pointer-events-none"
-                        : "pointer-events-auto"
-                    }`}
-                  >
-                    {creatingList ? (
-                      <>
-                        <div className="mr-3">
-                          <Spinner size="sm" light={true} />
-                        </div>
-                        Creating
-                      </>
-                    ) : (
-                      "Create"
-                    )}
-                  </Button>
-                </form>
+                  isLoading={creatingList}
+                  type="list"
+                />
               )}
             </div>
           </article>
