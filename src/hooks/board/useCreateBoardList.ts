@@ -7,10 +7,19 @@ interface Props {
 }
 
 export default function useCreateBoardList({ setCreateListForm }: Props) {
+  const utils = api.useContext();
+
   const { mutate, isLoading } = api.board.createList.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data, { boardID }) => {
       toast.success("Created successfully😊");
       setCreateListForm(false);
+      utils.board.getSingle.setData({ boardID }, (old) => {
+        if (old === undefined) return old;
+        return {
+          ...old,
+          boardLists: [...old.boardLists, data],
+        };
+      });
     },
     onError: (err) => {
       console.log(err);

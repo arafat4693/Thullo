@@ -119,9 +119,9 @@ model BoardCard {
 model Comment {
     id          String    @id @default(auto()) @map("_id") @db.ObjectId
     content     String
-    user        User      @relation(fields: [userId], references: [id])
+    user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId      String    @db.ObjectId
-    boardCard   BoardCard @relation(fields: [boardCardId], references: [id])
+    boardCard   BoardCard @relation(fields: [boardCardId], references: [id], onDelete: Cascade)
     boardCardId String    @db.ObjectId
     createdAt   DateTime  @default(now())
 }
@@ -130,18 +130,18 @@ model Label {
     id          String    @id @default(auto()) @map("_id") @db.ObjectId
     name        String
     labelColor  String
-    boardCard   BoardCard @relation(fields: [boardCardId], references: [id])
+    boardCard   BoardCard @relation(fields: [boardCardId], references: [id], onDelete: Cascade)
     boardCardId String    @db.ObjectId
 }
 
 model Attachment {
     id        String   @id @default(auto()) @map("_id") @db.ObjectId
     name      String
-    cover     String
-    coverID   String
+    cover     String?
+    coverID   String?
     createdAt DateTime @default(now())
 
-    boardCard   BoardCard @relation(fields: [boardCardId], references: [id])
+    boardCard   BoardCard @relation(fields: [boardCardId], references: [id], onDelete: Cascade)
     boardCardId String    @db.ObjectId
 }
 

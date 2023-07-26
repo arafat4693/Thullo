@@ -1,3 +1,4 @@
+import { Label } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -9,6 +10,21 @@ import { CreateBoardInput } from "~/utils/zodSchemas";
 interface MembersManipulationProps {
   currentUserID: string;
   take?: number;
+}
+
+interface DefaultCardValuesType {
+  Labels: Label[];
+  cover: string | null;
+  assignedMembers: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  }[];
+  _count: {
+    Comments: number;
+    Attachments: number;
+    assignedMembers: number;
+  };
 }
 
 function membersManipulation({
@@ -217,6 +233,11 @@ export const boardRouter = createTRPCRouter({
                     title: true,
                     Labels: true,
                     cover: true,
+                    creator: {
+                      select: {
+                        id: true,
+                      },
+                    },
                     assignedMembers: {
                       ...membersManipulation({
                         currentUserID: session.user.id,
@@ -273,8 +294,13 @@ export const boardRouter = createTRPCRouter({
               name: true,
             },
           });
+          const cards: (DefaultCardValuesType & {
+            id: string;
+            title: string;
+            creator: { id: string };
+          })[] = [];
 
-          return newList;
+          return { ...newList, cards };
         } catch (err) {
           console.log(err);
           throw new TRPCError(formatError(err));
@@ -379,10 +405,26 @@ export const boardRouter = createTRPCRouter({
             select: {
               id: true,
               title: true,
+              creator: {
+                select: {
+                  id: true,
+                },
+              },
             },
           });
 
-          return newCard;
+          const defaultCardValues: DefaultCardValuesType = {
+            Labels: [],
+            cover: null,
+            assignedMembers: [],
+            _count: {
+              Comments: 0,
+              Attachments: 0,
+              assignedMembers: 0,
+            },
+          };
+
+          return { ...newCard, ...defaultCardValues };
         } catch (err) {
           console.log(err);
           throw new TRPCError(formatError(err));

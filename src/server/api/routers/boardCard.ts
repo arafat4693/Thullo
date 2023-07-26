@@ -27,7 +27,7 @@ function authorizedUsers({ loggedInUser }: { loggedInUser: string }) {
 export const boardCardRouter = createTRPCRouter({
   getDetails: protectedProcedure
     .input(z.object({ cardID: z.string() }))
-    .query(async ({ ctx: { prisma, session }, input: { cardID } }) => {
+    .query(async ({ ctx: { prisma }, input: { cardID } }) => {
       try {
         const details = await prisma.boardCard.findFirstOrThrow({
           where: {
@@ -38,8 +38,16 @@ export const boardCardRouter = createTRPCRouter({
             title: true,
             description: true,
             cover: true,
+            Attachments: true,
+            BoardList: {
+              select: {
+                name: true,
+              },
+            },
           },
         });
+
+        return details;
       } catch (err) {
         console.log(err);
         throw new TRPCError(formatError(err));
