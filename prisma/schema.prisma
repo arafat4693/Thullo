@@ -95,14 +95,14 @@ model BoardList {
     id      String      @id @default(auto()) @map("_id") @db.ObjectId
     name    String
     cards   BoardCard[]
-    Board   Board?      @relation(fields: [boardId], references: [id], onDelete: Cascade)
-    boardId String?     @db.ObjectId
+    Board   Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+    boardId String      @db.ObjectId
 }
 
 model BoardCard {
     id              String       @id @default(auto()) @map("_id") @db.ObjectId
-    BoardList       BoardList?   @relation(fields: [boardListId], references: [id], onDelete: Cascade)
-    boardListId     String?      @db.ObjectId
+    BoardList       BoardList    @relation(fields: [boardListId], references: [id], onDelete: Cascade)
+    boardListId     String       @db.ObjectId
     title           String
     assignedIDs     String[]     @db.ObjectId
     assignedMembers User[]       @relation("assigned", fields: [assignedIDs], references: [id])
@@ -135,11 +135,12 @@ model Label {
 }
 
 model Attachment {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    name      String
-    cover     String?
-    coverID   String?
-    createdAt DateTime @default(now())
+    id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    name        String
+    downloadURL String
+    uploadID    String
+    fileType    String
+    createdAt   DateTime @default(now())
 
     boardCard   BoardCard @relation(fields: [boardCardId], references: [id], onDelete: Cascade)
     boardCardId String    @db.ObjectId

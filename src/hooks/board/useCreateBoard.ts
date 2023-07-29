@@ -37,8 +37,8 @@ export default function useCreateBoard({ setShowModal }: Props) {
     onError: (err) => {
       console.log(err);
       err.message.includes('"Body excee"... is not valid JSON')
-        ? toast.error("Image's size is too big. Max 1MB")
-        : toast.error(err.message);
+        ? toast.error("Image's size is too big.")
+        : toast.error("Server error. Please try again later.");
     },
   });
   return { mutate, isLoading };

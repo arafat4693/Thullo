@@ -2,10 +2,12 @@ import { create } from "zustand";
 
 interface useCardDetailsModalStore {
   cardID: string;
-  alterValue: (cardID: string) => void;
+  onOpen: (cardID: string) => void;
+  onClose: () => void;
 }
 
 export const useCardDetailsModal = create<useCardDetailsModalStore>((set) => ({
   cardID: "",
-  alterValue: (cardID) => set({ cardID }),
+  onOpen: (cardID) => set({ cardID }),
+  onClose: () => set({ cardID: "" }),
 }));

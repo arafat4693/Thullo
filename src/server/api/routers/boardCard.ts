@@ -2,14 +2,13 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { formatError } from "~/utils/functions";
 import { TRPCError } from "@trpc/server";
+import cloudinary from "~/utils/cloudinaryConfig";
 
 function authorizedUsers({ loggedInUser }: { loggedInUser: string }) {
   return [
     {
-      assignedMembers: {
-        some: {
-          id: loggedInUser,
-        },
+      creator: {
+        id: loggedInUser,
       },
     },
     {
@@ -27,11 +26,12 @@ function authorizedUsers({ loggedInUser }: { loggedInUser: string }) {
 export const boardCardRouter = createTRPCRouter({
   getDetails: protectedProcedure
     .input(z.object({ cardID: z.string() }))
-    .query(async ({ ctx: { prisma }, input: { cardID } }) => {
+    .query(async ({ ctx: { prisma, session }, input: { cardID } }) => {
       try {
         const details = await prisma.boardCard.findFirstOrThrow({
           where: {
             id: cardID,
+            OR: authorizedUsers({ loggedInUser: session.user.id }),
           },
           select: {
             id: true,
@@ -67,8 +67,75 @@ export const boardCardRouter = createTRPCRouter({
               description,
             },
           });
-
+          if (!updateDescription.count) {
+            throw new Error("Not authorized!!!");
+          }
           return { description };
+        } catch (err) {
+          console.log(err);
+          throw new TRPCError(formatError(err));
+        }
+      }
+    ),
+  createAttachment: protectedProcedure
+    .input(
+      z.object({
+        cardID: z.string(),
+        fileType: z.string(),
+        attachment: z.string(),
+        name: z.string(),
+      })
+    )
+    .mutation(
+      async ({
+        ctx: { prisma, session },
+        input: { cardID, fileType, attachment, name },
+      }) => {
+        try {
+          const uploadFile = await cloudinary.uploader.upload(attachment, {
+            resource_type: "auto",
+          });
+
+          if (
+            // fileType === "image" ||
+            // fileType === "video" ||
+            // fileType === "audio"
+            fileType.startsWith("image") ||
+            fileType.startsWith("video") ||
+            fileType.startsWith("audio")
+          ) {
+            // Add **fl_attachment** in the URL to be able download the image/audio/video.
+            uploadFile.url = uploadFile.url.replace(
+              "upload",
+              "upload/fl_attachment"
+            );
+
+            // * Alternative
+            // ? uploadFile.url = uploadFile.url.split("upload").join("upload/fl_attachment")
+          }
+
+          const newAttachment = await prisma.attachment.create({
+            data: {
+              name,
+              fileType,
+              boardCard: {
+                connect: {
+                  id: cardID,
+                },
+              },
+              downloadURL: uploadFile.url,
+              uploadID: uploadFile.public_id,
+            },
+            select: {
+              id: true,
+              name: true,
+              fileType: true,
+              downloadURL: true,
+              createdAt: true,
+            },
+          });
+
+          return newAttachment;
         } catch (err) {
           console.log(err);
           throw new TRPCError(formatError(err));

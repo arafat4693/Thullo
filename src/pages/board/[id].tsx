@@ -1,34 +1,33 @@
-import { Alert, Avatar, Button, Spinner, TextInput } from "flowbite-react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { createServerSideHelpers } from "@trpc/react-query/server";
+import { Alert, Avatar, Button } from "flowbite-react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { getSession } from "next-auth/react";
-import { FormEvent, MouseEvent, useState } from "react";
-import { AiFillLock, AiOutlinePlus } from "react-icons/ai";
+import { FormEvent, useState } from "react";
+import { toast } from "react-hot-toast";
+import { AiOutlinePlus } from "react-icons/ai";
 import { BsThreeDots } from "react-icons/bs";
+import superjson from "superjson";
 import AssignMember from "~/components/boardModal/AssignMember";
 import BoardDetailModal from "~/components/boardModal/BoardDetailModal";
 import BoardList from "~/components/boardPage/BoardList";
+import CreateForm from "~/components/boardPage/CreateForm";
 import Visibility from "~/components/boardPage/Visibility";
 import AppHeader from "~/components/layout/AppHeader";
-import Modal from "~/components/layout/Modal";
 import MyButton from "~/components/layout/MyButton";
-import { createServerSideHelpers } from "@trpc/react-query/server";
+import useCreateBoardList from "~/hooks/board/useCreateBoardList";
+import { useCardDetailsModal } from "~/hooks/use-card-modal";
 import { appRouter } from "~/server/api/root";
 import { createInnerTRPCContext } from "~/server/api/trpc";
-import superjson from "superjson";
 import { api } from "~/utils/api";
-import useCreateBoardList from "~/hooks/board/useCreateBoardList";
-import { toast } from "react-hot-toast";
-import CreateForm from "~/components/boardPage/CreateForm";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 export default function board({
   userSession,
   boardID,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const [showDropDown, setShowDropDown] = useState<boolean>(false);
   const [createListForm, setCreateListForm] = useState<boolean>(false);
   const [parent] = useAutoAnimate();
+  const cardID = useCardDetailsModal((state) => state.cardID);
   const { data: currentBoard } = api.board.getSingle.useQuery(
     { boardID },
     {
@@ -108,12 +107,7 @@ export default function board({
                 ref={parent}
               >
                 {currentBoard.boardLists.map((bl) => (
-                  <BoardList
-                    key={bl.id}
-                    boardID={boardID}
-                    boardList={bl}
-                    setShowModal={setShowModal}
-                  />
+                  <BoardList key={bl.id} boardID={boardID} boardList={bl} />
                 ))}
               </div>
             ) : null}
@@ -136,13 +130,7 @@ export default function board({
         </main>
       </section>
 
-      {showModal && (
-        <Modal
-          showModal={showModal}
-          setShowModal={setShowModal}
-          modalBody={<BoardDetailModal setShowModal={setShowModal} />}
-        />
-      )}
+      {cardID && <BoardDetailModal />}
     </>
   );
 }

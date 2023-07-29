@@ -11,18 +11,19 @@ import { RouterOutputs, api } from "~/utils/api";
 import { toast } from "react-hot-toast";
 import CreateForm from "./CreateForm";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useCardDetailsModal } from "~/hooks/use-card-modal";
 
 interface Props {
-  setShowModal: Dispatch<SetStateAction<boolean>>;
   boardList: RouterOutputs["board"]["getSingle"]["boardLists"][number];
   boardID: string;
 }
 
-export default function BoardList({ setShowModal, boardList, boardID }: Props) {
+export default function BoardList({ boardList, boardID }: Props) {
   const [rename, setRename] = useState<boolean>(false);
   const [createCardForm, setCreateCardForm] = useState(false);
   const utils = api.useContext();
   const [parent] = useAutoAnimate();
+  const onOpen = useCardDetailsModal((state) => state.onOpen);
 
   const { mutate: renameList, isLoading } =
     api.board.renameBoardList.useMutation({
@@ -122,7 +123,7 @@ export default function BoardList({ setShowModal, boardList, boardID }: Props) {
 
       <section className="mt-4 flex flex-col gap-3" ref={parent}>
         {boardList.cards.map((c) => (
-          <main className="rounded-xl bg-white p-3 shadow-md">
+          <main className="rounded-xl bg-white p-3 shadow-md" key={c.id}>
             {c.cover && (
               <figure className="relative h-32 w-full rounded-xl">
                 <Image
@@ -134,7 +135,7 @@ export default function BoardList({ setShowModal, boardList, boardID }: Props) {
               </figure>
             )}
             <h3
-              onClick={() => setShowModal(true)}
+              onClick={() => onOpen(c.id)}
               className="mt-4 cursor-pointer text-base font-semibold text-gray-700 hover:underline"
             >
               {c.title}
