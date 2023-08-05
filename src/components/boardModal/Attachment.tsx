@@ -35,6 +35,15 @@ export default function Attachment({ attachment, cardID }: Props) {
         console.log(err);
       },
     });
+
+  function attachmentDelete() {
+    deleteAttachment({
+      attachmentID: attachment.id,
+      uploadID: attachment.uploadID,
+      fileType: attachment.fileType,
+    });
+  }
+
   return (
     <div className="mt-3.5 flex items-center gap-3">
       {attachment.fileType.startsWith("image") ? (
@@ -73,11 +82,16 @@ export default function Attachment({ attachment, cardID }: Props) {
         <h3 className="text-sm font-bold text-gray-800">{attachment.name}</h3>
         <div className="mt-1.5 flex flex-wrap gap-2">
           <a href={attachment.downloadURL} download>
-            <Button color="success" size="xs">
+            <Button disabled={deletingAttachment} color="success" size="xs">
               Download
             </Button>
           </a>
-          <Button disabled={deletingAttachment} color="failure" size="xs">
+          <Button
+            onClick={attachmentDelete}
+            disabled={deletingAttachment}
+            color="failure"
+            size="xs"
+          >
             {deletingAttachment ? <Spinner size="sm" light={true} /> : "Delete"}
           </Button>
         </div>

@@ -44,6 +44,7 @@ export const boardCardRouter = createTRPCRouter({
                 downloadURL: true,
                 fileType: true,
                 createdAt: true,
+                uploadID: true,
               },
             },
             BoardList: {
@@ -136,6 +137,7 @@ export const boardCardRouter = createTRPCRouter({
               fileType: true,
               downloadURL: true,
               createdAt: true,
+              uploadID: true,
             },
           });
 
@@ -147,32 +149,51 @@ export const boardCardRouter = createTRPCRouter({
       }
     ),
   deleteAttachment: protectedProcedure
-    .input(z.object({ attachmentID: z.string() }))
-    .mutation(async ({ ctx: { prisma, session }, input: { attachmentID } }) => {
-      try {
-        const deleteAttachment = await prisma.attachment.deleteMany({
-          where: {
-            id: attachmentID,
-            boardCard: {
-              assignedMembers: {
-                some: {
-                  id: session.user.id,
+    .input(
+      z.object({
+        attachmentID: z.string(),
+        uploadID: z.string(),
+        fileType: z.string(),
+      })
+    )
+    .mutation(
+      async ({
+        ctx: { prisma, session },
+        input: { attachmentID, uploadID, fileType },
+      }) => {
+        try {
+          await cloudinary.uploader.destroy(uploadID, {
+            resource_type: fileType.startsWith("image")
+              ? "image"
+              : fileType.startsWith("video")
+              ? "video"
+              : "raw",
+          });
+
+          const deleteAttachment = await prisma.attachment.deleteMany({
+            where: {
+              id: attachmentID,
+              boardCard: {
+                assignedMembers: {
+                  some: {
+                    id: session.user.id,
+                  },
                 },
               },
             },
-          },
-        });
+          });
 
-        if (!deleteAttachment.count) {
-          throw new Error("Not authorized to delete.");
+          if (!deleteAttachment.count) {
+            throw new Error("Not authorized to delete.");
+          }
+
+          return "Successfully deleted";
+        } catch (err) {
+          console.log(err);
+          throw new TRPCError(formatError(err));
         }
-
-        return "Successfully deleted";
-      } catch (err) {
-        console.log(err);
-        throw new TRPCError(formatError(err));
       }
-    }),
+    ),
   createComment: protectedProcedure
     .input(z.object({ cardID: z.string(), content: z.string() }))
     .mutation(

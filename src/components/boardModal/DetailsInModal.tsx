@@ -40,6 +40,8 @@ export default function DetailsInModal({ cardDetails }: Props) {
   const descRef = useRef<HTMLDivElement | null>(null);
   const [descHeight, setDescHeight] = useState<number>(0);
 
+  const [attachmentHeight, setAttachmentHeight] = useState<number>(0);
+
   const [attachmentParent] = useAutoAnimate();
 
   const { register, handleSubmit, setValue, getValues } = useForm<Desc>({
@@ -78,6 +80,7 @@ export default function DetailsInModal({ cardDetails }: Props) {
       onSuccess: (data) => {
         setUploadFile(false);
         toast.success("Added successfully");
+        setAttachmentHeight(0);
         setAttachmentData({ name: "", fileType: "", uploadURL: "" });
         utils.boardCard.getDetails.setData(
           { cardID: cardDetails.id },
@@ -99,14 +102,17 @@ export default function DetailsInModal({ cardDetails }: Props) {
     });
 
   useEffect(() => {
-    console.log(descHeight);
-  }, [descHeight]);
-
-  useEffect(() => {
     if (!descRef || !descRef.current) return;
     const rect = descRef.current.getBoundingClientRect();
     setDescHeight(rect.height);
   }, [descRef, setDescHeight, cardDetails.description]);
+
+  useEffect(() => {
+    const element = document.getElementById("attachments");
+    if (!element) return;
+    const rect = element.getBoundingClientRect();
+    setAttachmentHeight(rect.height);
+  }, [setAttachmentHeight, cardDetails.Attachments]);
 
   function handleFileChange(file: File) {
     const reader = (readFile: File) =>
@@ -273,20 +279,27 @@ export default function DetailsInModal({ cardDetails }: Props) {
 
       <div
         ref={attachmentParent}
+        id="attachments"
         className={`overflow-hidden text-sm font-semibold text-gray-700 ${
-          seeMoreAttachments ? "h-auto" : "h-44"
+          attachmentHeight > 176
+            ? seeMoreAttachments
+              ? "h-auto"
+              : "h-44"
+            : "h-auto"
         }`}
       >
         {cardDetails.Attachments.map((a) => (
           <Attachment cardID={cardDetails.id} key={a.id} attachment={a} />
         ))}
       </div>
-      <button
-        className="flex w-full cursor-pointer justify-end text-sm font-medium text-gray-400 hover:text-blue-500 hover:underline"
-        onClick={() => setSeeMoreAttachments((state) => !state)}
-      >
-        ...see {seeMoreAttachments ? "less" : "more"}
-      </button>
+      {attachmentHeight > 176 ? (
+        <button
+          className="flex w-full cursor-pointer justify-end text-sm font-medium text-gray-400 hover:text-blue-500 hover:underline"
+          onClick={() => setSeeMoreAttachments((state) => !state)}
+        >
+          ...see {seeMoreAttachments ? "less" : "more"}
+        </button>
+      ) : null}
 
       <CreateComment />
 
