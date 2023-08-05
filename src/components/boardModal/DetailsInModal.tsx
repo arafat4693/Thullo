@@ -6,10 +6,11 @@ import CreateComment from "./CreateComment";
 import Comment from "./Comment";
 import { RouterOutputs, api } from "~/utils/api";
 import TextareaAutosize from "react-textarea-autosize";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useForm, type FieldValues } from "react-hook-form";
 import { useCardDetailsModal } from "~/hooks/use-card-modal";
 import { toast } from "react-hot-toast";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 interface Props {
   cardDetails: RouterOutputs["boardCard"]["getDetails"];
@@ -26,7 +27,8 @@ interface Attachment {
 }
 
 export default function DetailsInModal({ cardDetails }: Props) {
-  const [seeMore, setSeeMore] = useState<boolean>(false);
+  const [seeMoreDesc, setSeeMoreDesc] = useState<boolean>(false);
+  const [seeMoreAttachments, setSeeMoreAttachments] = useState<boolean>(false);
   const [editDesc, setEditDesc] = useState<boolean>(false);
   const [uploadFile, setUploadFile] = useState<boolean>(false);
   const [attachmentData, setAttachmentData] = useState<Attachment>({
@@ -35,8 +37,10 @@ export default function DetailsInModal({ cardDetails }: Props) {
     uploadURL: "",
   });
 
-  //test
-  const [test, setTest] = useState<string>("");
+  const descRef = useRef<HTMLDivElement | null>(null);
+  const [descHeight, setDescHeight] = useState<number>(0);
+
+  const [attachmentParent] = useAutoAnimate();
 
   const { register, handleSubmit, setValue, getValues } = useForm<Desc>({
     defaultValues: {
@@ -51,6 +55,7 @@ export default function DetailsInModal({ cardDetails }: Props) {
       onSuccess: (data) => {
         toast.success("Updated successfully");
         setEditDesc(false);
+        setDescHeight(0);
         utils.boardCard.getDetails.setData(
           { cardID: cardDetails.id },
           (old) => {
@@ -73,7 +78,17 @@ export default function DetailsInModal({ cardDetails }: Props) {
       onSuccess: (data) => {
         setUploadFile(false);
         toast.success("Added successfully");
-        setTest(data.downloadURL);
+        setAttachmentData({ name: "", fileType: "", uploadURL: "" });
+        utils.boardCard.getDetails.setData(
+          { cardID: cardDetails.id },
+          (old) => {
+            if (old === undefined) return old;
+            return {
+              ...old,
+              Attachments: [...old.Attachments, data],
+            };
+          }
+        );
       },
       onError: (err) => {
         err.message.includes('"Body excee"... is not valid JSON')
@@ -82,6 +97,16 @@ export default function DetailsInModal({ cardDetails }: Props) {
         console.log(err);
       },
     });
+
+  useEffect(() => {
+    console.log(descHeight);
+  }, [descHeight]);
+
+  useEffect(() => {
+    if (!descRef || !descRef.current) return;
+    const rect = descRef.current.getBoundingClientRect();
+    setDescHeight(rect.height);
+  }, [descRef, setDescHeight, cardDetails.description]);
 
   function handleFileChange(file: File) {
     const reader = (readFile: File) =>
@@ -128,7 +153,7 @@ export default function DetailsInModal({ cardDetails }: Props) {
 
   function addAttachment() {
     const { name, fileType, uploadURL } = attachmentData;
-    if (fileType.endsWith("pdf")) return toast.error("PDF not allowed.");
+    if (fileType === "application/pdf") return toast.error("PDF not allowed.");
     createAttachment({
       name,
       fileType,
@@ -166,11 +191,10 @@ export default function DetailsInModal({ cardDetails }: Props) {
           <TextareaAutosize
             autoFocus
             minRows={2}
+            defaultValue={getValues().description}
             {...register("description")}
             className="mt-3 w-full rounded-lg border-2 border-solid border-gray-800 text-sm font-semibold text-gray-700 focus:border-gray-800 focus:outline-0 focus:ring-0"
-          >
-            {getValues().description}
-          </TextareaAutosize>
+          />
           <div className="flex gap-x-2">
             <Button
               disabled={updatingDesc}
@@ -193,22 +217,25 @@ export default function DetailsInModal({ cardDetails }: Props) {
       ) : (
         <>
           <div
+            ref={descRef}
             className={`mt-3 overflow-hidden whitespace-pre-wrap text-sm font-semibold text-gray-700 ${
-              seeMore ? "h-auto" : "h-14"
+              descHeight > 56 ? (seeMoreDesc ? "h-auto" : "h-14") : "h-auto"
             }`}
           >
             {cardDetails.description}
           </div>
-          <button
-            className="flex w-full cursor-pointer justify-end text-sm font-medium text-gray-400 hover:text-blue-500 hover:underline"
-            onClick={() => setSeeMore((state) => !state)}
-          >
-            ...see {seeMore ? "less" : "more"}
-          </button>
+          {descHeight > 56 ? (
+            <button
+              className="flex w-full cursor-pointer justify-end text-sm font-medium text-gray-400 hover:text-blue-500 hover:underline"
+              onClick={() => setSeeMoreDesc((state) => !state)}
+            >
+              ...see {seeMoreDesc ? "less" : "more"}
+            </button>
+          ) : null}
         </>
       )}
 
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-6 flex items-center gap-3">
         <p className="flex items-center gap-x-1 text-xs font-medium text-gray-400">
           <HiDocumentText />
           Attachments
@@ -219,12 +246,12 @@ export default function DetailsInModal({ cardDetails }: Props) {
         </Button>
       </div>
 
-      {uploadFile ? (
+      {uploadFile && (
         <>
           <input type="file" onChange={uploadAttachment} className="mt-2" />
           <div className="mt-2 flex gap-x-2">
             <Button
-              disabled={creatingAttachment}
+              disabled={creatingAttachment || !attachmentData.uploadURL}
               type="button"
               color="success"
               size="sm"
@@ -242,17 +269,24 @@ export default function DetailsInModal({ cardDetails }: Props) {
             </Button>
           </div>
         </>
-      ) : (
-        <>
-          <Attachment />
-          <Attachment />
-        </>
       )}
-      {test && (
-        <a href={test} download>
-          download
-        </a>
-      )}
+
+      <div
+        ref={attachmentParent}
+        className={`overflow-hidden text-sm font-semibold text-gray-700 ${
+          seeMoreAttachments ? "h-auto" : "h-44"
+        }`}
+      >
+        {cardDetails.Attachments.map((a) => (
+          <Attachment cardID={cardDetails.id} key={a.id} attachment={a} />
+        ))}
+      </div>
+      <button
+        className="flex w-full cursor-pointer justify-end text-sm font-medium text-gray-400 hover:text-blue-500 hover:underline"
+        onClick={() => setSeeMoreAttachments((state) => !state)}
+      >
+        ...see {seeMoreAttachments ? "less" : "more"}
+      </button>
 
       <CreateComment />
 

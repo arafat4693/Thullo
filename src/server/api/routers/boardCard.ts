@@ -31,14 +31,21 @@ export const boardCardRouter = createTRPCRouter({
         const details = await prisma.boardCard.findFirstOrThrow({
           where: {
             id: cardID,
-            OR: authorizedUsers({ loggedInUser: session.user.id }),
           },
           select: {
             id: true,
             title: true,
             description: true,
             cover: true,
-            Attachments: true,
+            Attachments: {
+              select: {
+                id: true,
+                name: true,
+                downloadURL: true,
+                fileType: true,
+                createdAt: true,
+              },
+            },
             BoardList: {
               select: {
                 name: true,
@@ -97,9 +104,6 @@ export const boardCardRouter = createTRPCRouter({
           });
 
           if (
-            // fileType === "image" ||
-            // fileType === "video" ||
-            // fileType === "audio"
             fileType.startsWith("image") ||
             fileType.startsWith("video") ||
             fileType.startsWith("audio")
@@ -142,6 +146,33 @@ export const boardCardRouter = createTRPCRouter({
         }
       }
     ),
+  deleteAttachment: protectedProcedure
+    .input(z.object({ attachmentID: z.string() }))
+    .mutation(async ({ ctx: { prisma, session }, input: { attachmentID } }) => {
+      try {
+        const deleteAttachment = await prisma.attachment.deleteMany({
+          where: {
+            id: attachmentID,
+            boardCard: {
+              assignedMembers: {
+                some: {
+                  id: session.user.id,
+                },
+              },
+            },
+          },
+        });
+
+        if (!deleteAttachment.count) {
+          throw new Error("Not authorized to delete.");
+        }
+
+        return "Successfully deleted";
+      } catch (err) {
+        console.log(err);
+        throw new TRPCError(formatError(err));
+      }
+    }),
   createComment: protectedProcedure
     .input(z.object({ cardID: z.string(), content: z.string() }))
     .mutation(
